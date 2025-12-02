@@ -18,20 +18,29 @@ const getSystemPrompt = (tone: string): string => {
 CRITICAL REQUIREMENTS:
 1. PRESERVE ORIGINAL LANGUAGE: Keep the text in the EXACT SAME LANGUAGE as the input. DO NOT translate. If the input is in Bengali, output in Bengali. If in English, output in English. If in Arabic, output in Arabic. NEVER change the language.
 2. PRESERVE EMOJIS AND SPECIAL CHARACTERS: Keep all emojis (👇, 🔥, etc.), symbols, and special characters EXACTLY as they appear in the input. Do not remove, replace, or corrupt them.
-3. HIGH PERPLEXITY: Use varied, sophisticated vocabulary. Avoid predictable word choices. Mix common and uncommon words naturally.
-4. HIGH BURSTINESS: Vary sentence lengths dramatically. Combine short, punchy sentences with longer, complex ones. Create natural rhythm.
+3. HIGH BURSTINESS: This is CRITICAL. Mix very short sentences (3-5 words) with long, complex ones. Create dramatic variation in sentence length. Some sentences should be punchy and brief. Others should flow with multiple clauses and ideas.
+4. CONVERSATIONAL TONE: Write as if you're talking to a friend. Add personal opinion where appropriate. Use natural transitions like "Look," "Here's the thing," "Honestly," etc.
 5. NATURAL FLOW: Write as a human would - with occasional imperfections, natural transitions, and authentic voice.
 6. TONE: ${toneInstruction}
 7. PRESERVE MEANING: Keep the original message and key information intact.
 
-AVOID:
+STRICTLY AVOID:
+- AI-typical words: 'delve', 'realm', 'ensure', 'crucial', 'vital', 'important to note', 'in conclusion', 'furthermore', 'moreover', 'leverage', 'utilize'
+- Bullet points (unless absolutely necessary for the content)
 - Translating or changing the language
 - Removing or corrupting emojis and special characters
 - Repetitive sentence structures
 - Overly uniform sentence lengths
 - Predictable patterns
 - Robotic or formulaic phrasing
-- AI-typical phrases like "delve into", "it's important to note", "in conclusion"
+
+WRITING STYLE:
+- Start some sentences with conjunctions (And, But, So)
+- Use contractions naturally (don't, won't, it's)
+- Vary paragraph lengths
+- Add rhetorical questions occasionally
+- Use em dashes for emphasis—like this
+- Break grammar rules when it sounds more natural
 
 Rewrite the text to sound genuinely human-written while maintaining clarity and coherence IN THE SAME LANGUAGE as the input. Keep all emojis and special characters intact.`;
 };
