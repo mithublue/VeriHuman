@@ -4,10 +4,11 @@ import { NextRequest, NextResponse } from 'next/server';
 
 // AI Detection Result Interface
 interface DetectionResult {
-    score: number;
+    perplexity_analysis: string;
+    burstiness_analysis: string;
+    ai_score: number;
     verdict: 'Likely AI' | 'Likely Human' | 'Mixed';
-    reason_vocabulary: string;
-    reason_structure: string;
+    reason: string;
 }
 
 // Linguistic Forensic Analyst System Prompt
@@ -60,10 +61,11 @@ function parseJSONResponse(response: string): DetectionResult {
         const parsed = JSON.parse(cleanedResponse);
 
         // Validate required fields
-        if (typeof parsed.score !== 'number' ||
+        if (typeof parsed.ai_score !== 'number' ||
             !parsed.verdict ||
-            !parsed.reason_vocabulary ||
-            !parsed.reason_structure) {
+            !parsed.perplexity_analysis ||
+            !parsed.burstiness_analysis ||
+            !parsed.reason) {
             throw new Error('Invalid response format');
         }
 
@@ -188,10 +190,11 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({
             success: true,
-            score: result.score,
+            score: result.ai_score,
             verdict: result.verdict,
-            reason_vocabulary: result.reason_vocabulary,
-            reason_structure: result.reason_structure,
+            perplexity_analysis: result.perplexity_analysis,
+            burstiness_analysis: result.burstiness_analysis,
+            reason: result.reason,
             provider,
         });
 

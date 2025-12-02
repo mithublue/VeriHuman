@@ -11,8 +11,9 @@ interface AIDetectorProps {
 interface DetectionResult {
     score: number;
     verdict: 'Likely AI' | 'Likely Human' | 'Mixed';
-    reason_vocabulary: string;
-    reason_structure: string;
+    perplexity_analysis: string;
+    burstiness_analysis: string;
+    reason: string;
     provider: string;
 }
 
@@ -243,10 +244,10 @@ export function AIDetector({ onHumanize }: AIDetectorProps) {
                                 <div className="p-2 bg-purple-100 rounded-lg">
                                     <FileText className="w-5 h-5 text-purple-600" />
                                 </div>
-                                <h4 className="font-semibold text-gray-900">Vocabulary Pattern</h4>
+                                <h4 className="font-semibold text-gray-900">Perplexity Analysis</h4>
                             </div>
                             <p className="text-sm text-gray-600 leading-relaxed">
-                                {result.reason_vocabulary}
+                                {result.perplexity_analysis}
                             </p>
                         </motion.div>
 
@@ -261,10 +262,10 @@ export function AIDetector({ onHumanize }: AIDetectorProps) {
                                 <div className="p-2 bg-blue-100 rounded-lg">
                                     <TrendingUp className="w-5 h-5 text-blue-600" />
                                 </div>
-                                <h4 className="font-semibold text-gray-900">Sentence Structure</h4>
+                                <h4 className="font-semibold text-gray-900">Burstiness Analysis</h4>
                             </div>
                             <p className="text-sm text-gray-600 leading-relaxed">
-                                {result.reason_structure}
+                                {result.burstiness_analysis}
                             </p>
                         </motion.div>
                     </div>
