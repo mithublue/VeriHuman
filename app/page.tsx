@@ -1,0 +1,144 @@
+'use client';
+
+import React, { useState } from 'react';
+import { Header } from '@/components/Header';
+import { ToneSelector } from '@/components/ToneSelector';
+import { TextAreaCard } from '@/components/TextAreaCard';
+import { Sparkles, Wand2 } from 'lucide-react';
+
+export default function Home() {
+    const [inputText, setInputText] = useState('');
+    const [outputText, setOutputText] = useState('');
+    const [selectedTone, setSelectedTone] = useState('standard');
+    const [isLoading, setIsLoading] = useState(false);
+    const [provider, setProvider] = useState('');
+    const [error, setError] = useState('');
+
+    const inputWordCount = inputText.trim().split(/\s+/).filter(Boolean).length;
+    const outputWordCount = outputText.trim().split(/\s+/).filter(Boolean).length;
+
+    const handleHumanize = async () => {
+        if (!inputText.trim()) return;
+
+        setIsLoading(true);
+        setError('');
+        setOutputText('');
+        setProvider('');
+
+        try {
+            const response = await fetch('/api/humanize', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    text: inputText,
+                    tone: selectedTone,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || 'Failed to humanize text');
+            }
+
+            setOutputText(data.humanizedText);
+            setProvider(data.provider);
+        } catch (err) {
+            setError(err instanceof Error ? err.message : 'An error occurred');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <div className="min-h-screen flex flex-col bg-gray-50">
+            <Header />
+
+            <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8 max-w-7xl">
+                <div className="space-y-8">
+
+                    {/* Hero Section */}
+                    <div className="text-center max-w-3xl mx-auto mb-10">
+                        <div className="inline-flex items-center justify-center p-2 bg-primary-50 rounded-full mb-4">
+                            <Sparkles className="w-5 h-5 text-primary-600 mr-2" />
+                            <span className="text-primary-700 font-medium text-sm">AI to Human Text Converter</span>
+                        </div>
+                        <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl mb-4">
+                            Transform AI content into natural human text.
+                        </h1>
+                        <p className="text-lg text-gray-600">
+                            Bypass AI detection and refine your content with our advanced humanization engine. Select your tone and get started.
+                        </p>
+                    </div>
+
+                    {/* Settings Bar */}
+                    <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 max-w-4xl mx-auto">
+                        <div className="w-full sm:w-64">
+                            <ToneSelector value={selectedTone} onChange={setSelectedTone} />
+                        </div>
+                        <button
+                            onClick={handleHumanize}
+                            disabled={!inputText.trim() || isLoading}
+                            className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-2.5 bg-primary-600 text-white font-medium rounded-lg hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm"
+                        >
+                            {isLoading ? (
+                                <>
+                                    <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Humanizing...
+                                </>
+                            ) : (
+                                <>
+                                    <Wand2 className="w-5 h-5 mr-2" />
+                                    Humanize Text
+                                </>
+                            )}
+                        </button>
+                    </div>
+
+                    {/* Error Message */}
+                    {error && (
+                        <div className="max-w-4xl mx-auto bg-red-50 border border-red-200 rounded-lg p-4">
+                            <p className="text-sm text-red-800">{error}</p>
+                        </div>
+                    )}
+
+                    {/* Editor Grid */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[600px] lg:h-[500px]">
+                        <TextAreaCard
+                            title="AI GENERATED TEXT"
+                            placeholder="Paste your AI-generated text here (ChatGPT, Gemini, Claude, etc)..."
+                            value={inputText}
+                            onChange={setInputText}
+                            wordCount={inputWordCount}
+                        />
+
+                        <TextAreaCard
+                            title="HUMANIZED OUTPUT"
+                            placeholder={isLoading ? "Humanizing your text..." : "Your humanized content will appear here..."}
+                            value={outputText}
+                            onChange={setOutputText}
+                            readOnly={true}
+                            wordCount={outputWordCount}
+                            provider={provider}
+                        />
+                    </div>
+
+                </div>
+            </main>
+
+            {/* Footer */}
+            <footer className="bg-white border-t border-gray-200 mt-auto">
+                <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                    <p className="text-center text-sm text-gray-500">
+                        &copy; {new Date().getFullYear()} HumanizeAI. Built for quality content.
+                    </p>
+                </div>
+            </footer>
+        </div>
+    );
+}
