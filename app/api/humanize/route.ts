@@ -71,7 +71,7 @@ async function tryOpenRouter(text: string, tone: string): Promise<string> {
     });
 
     const completion = await openai.chat.completions.create({
-        model: 'meta-llama/llama-3-8b-instruct:free',
+        model: 'meta-llama/llama-3.3-70b-instruct:free',
         messages: [
             { role: 'system', content: getSystemPrompt(tone) },
             { role: 'user', content: `Humanize this text:\n${text}` },
