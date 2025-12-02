@@ -16,20 +16,24 @@ const getSystemPrompt = (tone: string): string => {
     return `You are an expert text humanizer. Your task is to rewrite AI-generated text to make it sound completely natural and human-written, undetectable by AI detection tools.
 
 CRITICAL REQUIREMENTS:
-1. HIGH PERPLEXITY: Use varied, sophisticated vocabulary. Avoid predictable word choices. Mix common and uncommon words naturally.
-2. HIGH BURSTINESS: Vary sentence lengths dramatically. Combine short, punchy sentences with longer, complex ones. Create natural rhythm.
-3. NATURAL FLOW: Write as a human would - with occasional imperfections, natural transitions, and authentic voice.
-4. TONE: ${toneInstruction}
-5. PRESERVE MEANING: Keep the original message and key information intact.
+1. PRESERVE ORIGINAL LANGUAGE: Keep the text in the EXACT SAME LANGUAGE as the input. DO NOT translate. If the input is in Bengali, output in Bengali. If in English, output in English. If in Arabic, output in Arabic. NEVER change the language.
+2. PRESERVE EMOJIS AND SPECIAL CHARACTERS: Keep all emojis (👇, 🔥, etc.), symbols, and special characters EXACTLY as they appear in the input. Do not remove, replace, or corrupt them.
+3. HIGH PERPLEXITY: Use varied, sophisticated vocabulary. Avoid predictable word choices. Mix common and uncommon words naturally.
+4. HIGH BURSTINESS: Vary sentence lengths dramatically. Combine short, punchy sentences with longer, complex ones. Create natural rhythm.
+5. NATURAL FLOW: Write as a human would - with occasional imperfections, natural transitions, and authentic voice.
+6. TONE: ${toneInstruction}
+7. PRESERVE MEANING: Keep the original message and key information intact.
 
 AVOID:
+- Translating or changing the language
+- Removing or corrupting emojis and special characters
 - Repetitive sentence structures
 - Overly uniform sentence lengths
 - Predictable patterns
 - Robotic or formulaic phrasing
 - AI-typical phrases like "delve into", "it's important to note", "in conclusion"
 
-Rewrite the text to sound genuinely human-written while maintaining clarity and coherence.`;
+Rewrite the text to sound genuinely human-written while maintaining clarity and coherence IN THE SAME LANGUAGE as the input. Keep all emojis and special characters intact.`;
 };
 
 // Provider 1: Google Gemini (Free tier)
@@ -116,6 +120,34 @@ async function tryPollinations(text: string, tone: string): Promise<string> {
     return humanizedText;
 }
 
+// Validate output to detect corruption
+function isOutputValid(input: string, output: string): boolean {
+    // Check if output is too short (likely failed)
+    if (output.trim().length < 10) {
+        return false;
+    }
+
+    // Check if output contains too many corrupted characters
+    // Count characters that are likely corruption (combining marks, control characters, etc.)
+    const corruptedChars = (output.match(/[\u0300-\u036F\u200B-\u200D\uFEFF]/g) || []).length;
+    const corruptionRatio = corruptedChars / output.length;
+
+    if (corruptionRatio > 0.1) { // More than 10% corrupted characters
+        return false;
+    }
+
+    // Check if output has reasonable character distribution
+    // If more than 30% of characters are non-standard Unicode, it might be corrupted
+    const nonStandardChars = (output.match(/[^\u0000-\u007F\u0980-\u09FF\u0600-\u06FF\u4E00-\u9FFF]/g) || []).length;
+    const nonStandardRatio = nonStandardChars / output.length;
+
+    if (nonStandardRatio > 0.3 && output.length > 50) {
+        return false;
+    }
+
+    return true;
+}
+
 // Cascading fallback logic
 async function humanizeText(text: string, tone: string): Promise<{ result: string; provider: string }> {
     const providers = [
@@ -128,6 +160,13 @@ async function humanizeText(text: string, tone: string): Promise<{ result: strin
         try {
             console.log(`Trying ${provider.name}...`);
             const result = await provider.fn(text, tone);
+
+            // Validate output quality
+            if (!isOutputValid(text, result)) {
+                console.warn(`✗ ${provider.name} returned corrupted output, trying next provider...`);
+                continue; // Skip to next provider
+            }
+
             console.log(`✓ Success with ${provider.name}`);
             return { result, provider: provider.name };
         } catch (error) {
