@@ -1,42 +1,86 @@
 import { redirect } from 'next/navigation';
 import { auth } from '@/auth';
+import { prisma } from '@/lib/prisma';
 import { Sidebar } from '@/components/dashboard/Sidebar';
 import { StatsCard } from '@/components/dashboard/StatsCard';
 import { ActivityTable } from '@/components/dashboard/ActivityTable';
 import { FileText, Search, Clock, TrendingUp } from 'lucide-react';
 
-async function getStats() {
-    const res = await fetch(`${process.env.NEXTAUTH_URL}/api/dashboard/stats`, {
-        cache: 'no-store',
-    });
-    if (!res.ok) return null;
-    return res.json();
-}
-
-async function getActivity() {
-    const res = await fetch(`${process.env.NEXTAUTH_URL}/api/dashboard/activity`, {
-        cache: 'no-store',
-    });
-    if (!res.ok) return { activities: [] };
-    return res.json();
-}
-
 export default async function DashboardPage() {
     const session = await auth();
 
-    if (!session?.user) {
+    if (!session?.user?.email) {
         redirect('/auth/signin');
     }
 
-    const statsData = await getStats();
-    const activityData = await getActivity();
+    // Fetch user stats directly from database
+    const user = await prisma.user.findUnique({
+        where: { email: session.user.email },
+        select: {
+            totalWordsHumanized: true,
+            totalDetections: true,
+            createdAt: true,
+        },
+    });
 
-    const stats = statsData?.stats || {
-        totalWordsHumanized: 0,
-        totalDetections: 0,
-        thisMonthWords: 0,
-        thisMonthDetections: 0,
-        savedTime: { formatted: '0m' },
+    // Calculate this month's stats
+    const startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0, 0, 0, 0);
+
+    const thisMonthActivities = await prisma.activityLog.groupBy({
+        by: ['type'],
+        where: {
+            user: { email: session.user.email },
+            createdAt: { gte: startOfMonth },
+        },
+        _sum: {
+            wordCount: true,
+        },
+        _count: true,
+    });
+
+    const thisMonthWords = thisMonthActivities
+        .filter((a: any) => a.type === 'humanize')
+        .reduce((sum: number, a: any) => sum + (a._sum.wordCount || 0), 0);
+
+    const thisMonthDetections = thisMonthActivities
+        .filter((a: any) => a.type === 'detect')
+        .reduce((sum: number, a: any) => sum + a._count, 0);
+
+    // Get recent activities
+    const activities = await prisma.activityLog.findMany({
+        where: {
+            user: { email: session.user.email },
+        },
+        orderBy: {
+            createdAt: 'desc',
+        },
+        take: 10,
+        select: {
+            id: true,
+            type: true,
+            wordCount: true,
+            status: true,
+            createdAt: true,
+        },
+    });
+
+    // Calculate saved time
+    const savedMinutes = Math.floor((user?.totalWordsHumanized || 0) / 200);
+    const savedHours = Math.floor(savedMinutes / 60);
+    const remainingMinutes = savedMinutes % 60;
+
+    const stats = {
+        totalWordsHumanized: user?.totalWordsHumanized || 0,
+        totalDetections: user?.totalDetections || 0,
+        thisMonthWords,
+        thisMonthDetections,
+        savedTime: {
+            formatted: savedHours > 0
+                ? `${savedHours}h ${remainingMinutes}m`
+                : `${remainingMinutes}m`,
+        },
     };
 
     return (
@@ -87,9 +131,9 @@ export default async function DashboardPage() {
                 </div>
 
                 {/* Activity Table */}
-                <ActivityTable activities={activityData.activities || []} />
+                <ActivityTable activities={activities} />
 
-                {/* Upgrade Section */}
+                {/* Upgrade Section - Commented out until Pro feature is ready
                 <div className="mt-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl p-8 text-white">
                     <div className="flex items-center justify-between">
                         <div>
@@ -103,6 +147,7 @@ export default async function DashboardPage() {
                         </button>
                     </div>
                 </div>
+                */}
             </main>
         </div>
     );
