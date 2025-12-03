@@ -220,6 +220,7 @@ export async function POST(request: NextRequest) {
                     data: {
                         userId: user.id,
                         type: 'detect',
+                        provider: provider,
                         wordCount,
                         status: 'success',
                     },

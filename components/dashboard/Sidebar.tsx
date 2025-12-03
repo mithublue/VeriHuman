@@ -1,19 +1,41 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Settings, LogOut, Home } from 'lucide-react';
+import { LayoutDashboard, Settings, LogOut, Home, Shield } from 'lucide-react';
 
 export function Sidebar() {
     const pathname = usePathname();
     const router = useRouter();
+    const [isAdmin, setIsAdmin] = useState(false);
+
+    // Check if user is admin (client-side check for UI only)
+    useEffect(() => {
+        const checkAdmin = async () => {
+            try {
+                const response = await fetch('/api/admin/check');
+                if (response.ok) {
+                    const data = await response.json();
+                    setIsAdmin(data.isAdmin);
+                }
+            } catch (error) {
+                console.error('Failed to check admin status:', error);
+            }
+        };
+        checkAdmin();
+    }, []);
 
     const navItems = [
         { href: '/', label: 'Home', icon: Home },
         { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
         { href: '/dashboard/settings', label: 'Settings', icon: Settings },
     ];
+
+    // Add admin item if user is admin
+    if (isAdmin) {
+        navItems.push({ href: '/dashboard/admin', label: 'Admin Panel', icon: Shield });
+    }
 
     const handleSignOut = async () => {
         try {
@@ -38,8 +60,8 @@ export function Sidebar() {
                             key={item.href}
                             href={item.href}
                             className={`flex items-center px-4 py-3 rounded-lg transition-colors ${isActive
-                                    ? 'bg-primary-50 text-primary-700 font-medium'
-                                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                ? 'bg-primary-50 text-primary-700 font-medium'
+                                : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                                 }`}
                         >
                             <Icon className="w-5 h-5 mr-3" />

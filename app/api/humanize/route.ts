@@ -258,6 +258,7 @@ export async function POST(request: NextRequest) {
                 data: {
                     userId: user.id,
                     type: 'humanize',
+                    provider: provider,
                     wordCount,
                     status: 'success',
                 },

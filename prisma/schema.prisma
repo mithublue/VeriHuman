@@ -71,6 +71,7 @@ model ActivityLog {
   id         String   @id @default(cuid())
   userId     String
   type       String   // 'humanize' or 'detect'
+  provider   String?  // AI model used: 'Google Gemini', 'OpenRouter', 'OpenAI'
   wordCount  Int
   status     String   // 'success' or 'failed'
   createdAt  DateTime @default(now())
@@ -79,4 +80,5 @@ model ActivityLog {
   
   @@index([userId, createdAt])
   @@index([createdAt])
+  @@index([provider, createdAt])
 }
