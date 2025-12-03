@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Search, Sparkles, AlertTriangle, CheckCircle, TrendingUp, FileText } from 'lucide-react';
+import { TimeSavedCard } from './TimeSavedCard';
 
 interface AIDetectorProps {
     onHumanize?: (text: string) => void;
@@ -230,6 +231,9 @@ export function AIDetector({ onHumanize }: AIDetectorProps) {
                             </div>
                         </div>
                     </div>
+
+                    {/* Time Saved Card */}
+                    <TimeSavedCard wordCount={wordCount} type="detect" />
 
                     {/* Analysis Cards Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

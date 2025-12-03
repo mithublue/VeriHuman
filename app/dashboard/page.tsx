@@ -66,10 +66,34 @@ export default async function DashboardPage() {
         },
     });
 
-    // Calculate saved time
-    const savedMinutes = Math.floor((user?.totalWordsHumanized || 0) / 200);
-    const savedHours = Math.floor(savedMinutes / 60);
-    const remainingMinutes = savedMinutes % 60;
+    // Calculate total time saved from ALL activities
+    // Fetch all successful activities
+    const allActivities = await prisma.activityLog.findMany({
+        where: {
+            user: { email: session.user.email },
+            status: 'success',
+        },
+        select: {
+            type: true,
+            wordCount: true,
+        },
+    });
+
+    // Calculate total time saved using formulas:
+    // Humanize: wordCount / 25
+    // Detect: wordCount / 150
+    let totalTimeSavedMinutes = 0;
+    allActivities.forEach(activity => {
+        if (activity.type === 'humanize') {
+            totalTimeSavedMinutes += activity.wordCount / 25;
+        } else if (activity.type === 'detect') {
+            totalTimeSavedMinutes += activity.wordCount / 150;
+        }
+    });
+
+    // Convert to hours and minutes
+    const savedHours = Math.floor(totalTimeSavedMinutes / 60);
+    const remainingMinutes = Math.ceil(totalTimeSavedMinutes % 60);
 
     const stats = {
         totalWordsHumanized: user?.totalWordsHumanized || 0,

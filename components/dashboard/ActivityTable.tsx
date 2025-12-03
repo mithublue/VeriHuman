@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { FileText, Search, CheckCircle, XCircle } from 'lucide-react';
 
 interface Activity {
@@ -16,7 +16,18 @@ interface ActivityTableProps {
 }
 
 export function ActivityTable({ activities }: ActivityTableProps) {
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
     const formatDate = (dateString: string) => {
+        // Return static date during SSR to prevent hydration mismatch
+        if (!mounted) {
+            return new Date(dateString).toLocaleDateString();
+        }
+
         const date = new Date(dateString);
         const now = new Date();
         const diffMs = now.getTime() - date.getTime();

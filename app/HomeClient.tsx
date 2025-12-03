@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { ToneSelector } from '@/components/ToneSelector';
 import { TextAreaCard } from '@/components/TextAreaCard';
 import { AIDetector } from '@/components/AIDetector';
+import { TimeSavedCard } from '@/components/TimeSavedCard';
 import { Sparkles, Wand2, Search, Lock } from 'lucide-react';
 import Link from 'next/link';
 
@@ -19,6 +20,7 @@ export function HomeClient() {
     const [isLoading, setIsLoading] = useState(false);
     const [provider, setProvider] = useState('');
     const [error, setError] = useState('');
+    const [showTimeSaved, setShowTimeSaved] = useState(false);
 
     // Check authentication status
     useEffect(() => {
@@ -70,6 +72,7 @@ export function HomeClient() {
 
             setOutputText(data.humanizedText);
             setProvider(data.provider);
+            setShowTimeSaved(true);
         } catch (err) {
             setError(err instanceof Error ? err.message : 'An error occurred');
         } finally {
@@ -172,6 +175,13 @@ export function HomeClient() {
                         {error && (
                             <div className="max-w-4xl mx-auto bg-red-50 border border-red-200 rounded-lg p-4">
                                 <p className="text-sm text-red-800">{error}</p>
+                            </div>
+                        )}
+
+                        {/* Time Saved Card */}
+                        {showTimeSaved && outputText && (
+                            <div className="w-full mb-6">
+                                <TimeSavedCard wordCount={inputWordCount} type="humanize" />
                             </div>
                         )}
 
