@@ -1,6 +1,11 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import OpenAI from 'openai';
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/auth';
+import { prisma } from '@/lib/prisma';
+
+// Force Node.js runtime for Prisma compatibility
+export const runtime = 'nodejs';
 
 // AI Detection Result Interface
 interface DetectionResult {
@@ -188,6 +193,43 @@ export async function POST(request: NextRequest) {
         // Execute AI detection with cascading fallback
         const { result, provider } = await detectAI(text);
 
+        // Log activity if user is authenticated
+        try {
+            const session = await auth();
+            if (session?.user?.email) {
+                const wordCount = text.trim().split(/\\s+/).filter(Boolean).length;
+
+                // Find or create user
+                const user = await prisma.user.upsert({
+                    where: { email: session.user.email },
+                    update: {
+                        totalDetections: { increment: 1 },
+                        lastActivity: new Date(),
+                    },
+                    create: {
+                        email: session.user.email!,
+                        name: session.user.name,
+                        image: session.user.image,
+                        totalDetections: 1,
+                        lastActivity: new Date(),
+                    },
+                });
+
+                // Log activity
+                await prisma.activityLog.create({
+                    data: {
+                        userId: user.id,
+                        type: 'detect',
+                        wordCount,
+                        status: 'success',
+                    },
+                });
+            }
+        } catch (dbError) {
+            console.error('Failed to log detection activity:', dbError);
+            // Don't fail the request if logging fails
+        }
+
         return NextResponse.json({
             success: true,
             score: result.ai_score,
@@ -195,7 +237,7 @@ export async function POST(request: NextRequest) {
             perplexity_analysis: result.perplexity_analysis,
             burstiness_analysis: result.burstiness_analysis,
             reason: result.reason,
-            provider,
+            provider: provider,
         });
 
     } catch (error) {

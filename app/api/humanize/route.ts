@@ -1,17 +1,24 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import OpenAI from 'openai';
 import { NextRequest, NextResponse } from 'next/server';
+import { auth } from '@/auth';
+import { prisma } from '@/lib/prisma';
+import { headers } from 'next/headers';
+
+// Force Node.js runtime for Prisma compatibility
+export const runtime = 'nodejs';
 
 // System prompt for humanizing AI text
 const getSystemPrompt = (tone: string): string => {
     const toneInstructions = {
-        standard: 'Use a balanced, natural writing style.',
-        casual: 'Use a relaxed, conversational tone with contractions and informal language.',
-        formal: 'Use professional, polished language with proper grammar and structure.',
-        academic: 'Use scholarly language with precise terminology and formal structure.',
+        standard: "Write in a natural, conversational tone that sounds like a real person wrote it.",
+        professional: "Write in a formal, business-appropriate tone while maintaining natural human-like qualities.",
+        casual: "Write in a relaxed, friendly tone as if texting a friend.",
+        academic: "Write in a scholarly tone with proper terminology while ensuring it sounds human-written.",
+        creative: "Write with flair and creativity, using vivid language and an engaging style."
     };
 
-    const toneInstruction = toneInstructions[tone.toLowerCase() as keyof typeof toneInstructions] || toneInstructions.standard;
+    const selectedTone = toneInstructions[tone as keyof typeof toneInstructions] || toneInstructions.standard;
 
     return `You are an expert text humanizer. Your task is to rewrite AI-generated text to make it sound completely natural and human-written, undetectable by AI detection tools.
 
@@ -21,7 +28,7 @@ CRITICAL REQUIREMENTS:
 3. HIGH BURSTINESS: This is CRITICAL. Mix very short sentences (3-5 words) with long, complex ones. Create dramatic variation in sentence length. Some sentences should be punchy and brief. Others should flow with multiple clauses and ideas.
 4. CONVERSATIONAL TONE: Write as if you're talking to a friend. Add personal opinion where appropriate. Use natural transitions like "Look," "Here's the thing," "Honestly," etc.
 5. NATURAL FLOW: Write as a human would - with occasional imperfections, natural transitions, and authentic voice.
-6. TONE: ${toneInstruction}
+6. TONE: ${selectedTone}
 7. PRESERVE MEANING: Keep the original message and key information intact.
 
 STRICTLY AVOID:
@@ -45,137 +52,111 @@ WRITING STYLE:
 Rewrite the text to sound genuinely human-written while maintaining clarity and coherence IN THE SAME LANGUAGE as the input. Keep all emojis and special characters intact.`;
 };
 
-// Provider 1: Google Gemini (Free tier)
-async function tryGemini(text: string, tone: string): Promise<string> {
-    const apiKey = process.env.GOOGLE_GEMINI_API_KEY;
-
-    if (!apiKey) {
+// Humanize with Google Gemini
+async function humanizeWithGemini(text: string, tone: string): Promise<string> {
+    if (!process.env.GOOGLE_GEMINI_API_KEY) {
         throw new Error('Gemini API key not configured');
     }
 
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({
-        model: 'gemini-2.5-flash-lite',
-        systemInstruction: getSystemPrompt(tone),
-    });
+    const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
 
-    const result = await model.generateContent(text);
-    const response = result.response;
-    const humanizedText = response.text();
+    const prompt = `${getSystemPrompt(tone)}
 
-    if (!humanizedText) {
+TEXT TO HUMANIZE:
+${text}
+
+HUMANIZED VERSION:`;
+
+    const result = await model.generateContent(prompt);
+    const response = result.response.text();
+
+    if (!response) {
         throw new Error('Gemini returned empty response');
     }
 
-    return humanizedText;
+    return response;
 }
 
-// Provider 2: OpenRouter with Llama 3 8B (Free tier)
-async function tryOpenRouter(text: string, tone: string): Promise<string> {
-    const apiKey = process.env.OPENROUTER_API_KEY;
-
-    if (!apiKey) {
+// Humanize with OpenRouter
+async function humanizeWithOpenRouter(text: string, tone: string): Promise<string> {
+    if (!process.env.OPENROUTER_API_KEY) {
         throw new Error('OpenRouter API key not configured');
     }
 
     const openai = new OpenAI({
         baseURL: 'https://openrouter.ai/api/v1',
-        apiKey: apiKey,
+        apiKey: process.env.OPENROUTER_API_KEY,
     });
 
     const completion = await openai.chat.completions.create({
         model: 'meta-llama/llama-3.3-70b-instruct:free',
         messages: [
-            { role: 'system', content: getSystemPrompt(tone) },
-            { role: 'user', content: `Humanize this text:\n${text}` },
+            {
+                role: 'system',
+                content: getSystemPrompt(tone)
+            },
+            {
+                role: 'user',
+                content: `Humanize this text:\n\n${text}`
+            }
         ],
     });
 
-    const humanizedText = completion.choices[0]?.message?.content;
+    const response = completion.choices[0]?.message?.content;
 
-    if (!humanizedText) {
+    if (!response) {
         throw new Error('OpenRouter returned empty response');
     }
 
-    return humanizedText;
+    return response;
 }
 
-// Provider 3: Pollinations.ai (No API key needed - Last resort)
-async function tryPollinations(text: string, tone: string): Promise<string> {
-    const response = await fetch('https://text.pollinations.ai/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            messages: [
-                { role: 'system', content: getSystemPrompt(tone) },
-                { role: 'user', content: `Humanize this text:\n${text}` },
-            ],
-            model: 'openai',
-        }),
+// Humanize with OpenAI GPT-4
+async function humanizeWithOpenAI(text: string, tone: string): Promise<string> {
+    if (!process.env.OPENAI_API_KEY) {
+        throw new Error('OpenAI API key not configured');
+    }
+
+    const openai = new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY,
     });
 
-    if (!response.ok) {
-        throw new Error(`Pollinations API error: ${response.status}`);
+    const completion = await openai.chat.completions.create({
+        model: 'gpt-4-turbo-preview',
+        messages: [
+            {
+                role: 'system',
+                content: getSystemPrompt(tone)
+            },
+            {
+                role: 'user',
+                content: `Humanize this text:\n\n${text}`
+            }
+        ],
+    });
+
+    const response = completion.choices[0]?.message?.content;
+
+    if (!response) {
+        throw new Error('OpenAI returned empty response');
     }
 
-    const humanizedText = await response.text();
-
-    if (!humanizedText) {
-        throw new Error('Pollinations returned empty response');
-    }
-
-    return humanizedText;
+    return response;
 }
 
-// Validate output to detect corruption
-function isOutputValid(input: string, output: string): boolean {
-    // Check if output is too short (likely failed)
-    if (output.trim().length < 10) {
-        return false;
-    }
-
-    // Check if output contains too many corrupted characters
-    // Count characters that are likely corruption (combining marks, control characters, etc.)
-    const corruptedChars = (output.match(/[\u0300-\u036F\u200B-\u200D\uFEFF]/g) || []).length;
-    const corruptionRatio = corruptedChars / output.length;
-
-    if (corruptionRatio > 0.1) { // More than 10% corrupted characters
-        return false;
-    }
-
-    // Check if output has reasonable character distribution
-    // If more than 30% of characters are non-standard Unicode, it might be corrupted
-    const nonStandardChars = (output.match(/[^\u0000-\u007F\u0980-\u09FF\u0600-\u06FF\u4E00-\u9FFF]/g) || []).length;
-    const nonStandardRatio = nonStandardChars / output.length;
-
-    if (nonStandardRatio > 0.3 && output.length > 50) {
-        return false;
-    }
-
-    return true;
-}
-
-// Cascading fallback logic
+// Cascading fallback logic for text humanization
 async function humanizeText(text: string, tone: string): Promise<{ result: string; provider: string }> {
     const providers = [
-        { name: 'Google Gemini', fn: tryGemini },
-        { name: 'OpenRouter', fn: tryOpenRouter },
-        { name: 'Pollinations.ai', fn: tryPollinations },
+        { name: 'Google Gemini', fn: humanizeWithGemini },
+        { name: 'OpenRouter (Llama)', fn: humanizeWithOpenRouter },
+        { name: 'OpenAI GPT-4', fn: humanizeWithOpenAI },
     ];
 
     for (const provider of providers) {
         try {
-            console.log(`Trying ${provider.name}...`);
+            console.log(`Trying ${provider.name} for humanization...`);
             const result = await provider.fn(text, tone);
-
-            // Validate output quality
-            if (!isOutputValid(text, result)) {
-                console.warn(`✗ ${provider.name} returned corrupted output, trying next provider...`);
-                continue; // Skip to next provider
-            }
-
             console.log(`✓ Success with ${provider.name}`);
             return { result, provider: provider.name };
         } catch (error) {
@@ -184,12 +165,42 @@ async function humanizeText(text: string, tone: string): Promise<{ result: strin
         }
     }
 
-    throw new Error('All AI providers failed. Please try again later.');
+    throw new Error('All humanization providers failed. Please try again later.');
 }
 
 // API Route Handler
 export async function POST(request: NextRequest) {
     try {
+        // Try to get session - method 1: using auth()
+        let session = await auth();
+
+        // Debug logging
+        console.log('=== Humanize API Debug ===');
+        console.log('Method 1 - auth():', {
+            hasSession: !!session,
+            hasUser: !!session?.user,
+            hasEmail: !!session?.user?.email,
+            email: session?.user?.email || 'N/A',
+            userId: session?.user?.id || 'N/A'
+        });
+
+        // Method 2: Check headers for debugging
+        const headersList = headers();
+        const cookie = headersList.get('cookie');
+        console.log('Cookies present:', !!cookie);
+        console.log('Cookie preview:', cookie?.substring(0, 50) + '...');
+
+        if (!session?.user?.email) {
+            console.error('❌ Humanize API - Unauthorized: No session or email');
+            console.error('Session object:', JSON.stringify(session, null, 2));
+            return NextResponse.json(
+                { error: 'Unauthorized. Please sign in to use the humanize feature.' },
+                { status: 401 }
+            );
+        }
+
+        console.log('✅ Humanize API - Authenticated for:', session.user.email);
+
         const body = await request.json();
         const { text, tone } = body;
 
@@ -215,34 +226,65 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const validTones = ['standard', 'casual', 'formal', 'academic'];
-        const selectedTone = tone?.toLowerCase() || 'standard';
-
-        if (!validTones.includes(selectedTone)) {
-            return NextResponse.json(
-                { error: 'Invalid tone. Must be one of: standard, casual, formal, academic' },
-                { status: 400 }
-            );
-        }
+        // Validate tone
+        const validTones = ['standard', 'professional', 'casual', 'academic', 'creative'];
+        const selectedTone = validTones.includes(tone) ? tone : 'standard';
 
         // Execute cascading fallback
         const { result, provider } = await humanizeText(text, selectedTone);
 
+        // Log activity and update stats
+        const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
+
+        try {
+            // Find or create user
+            const user = await prisma.user.upsert({
+                where: { email: session.user.email },
+                update: {
+                    totalWordsHumanized: { increment: wordCount },
+                    lastActivity: new Date(),
+                },
+                create: {
+                    email: session.user.email!,
+                    name: session.user.name,
+                    image: session.user.image,
+                    totalWordsHumanized: wordCount,
+                    lastActivity: new Date(),
+                },
+            });
+
+            // Log activity
+            await prisma.activityLog.create({
+                data: {
+                    userId: user.id,
+                    type: 'humanize',
+                    wordCount,
+                    status: 'success',
+                },
+            });
+        } catch (dbError) {
+            console.error('Failed to log activity:', dbError);
+            // Don't fail the request if logging fails
+        }
+
         return NextResponse.json({
             success: true,
             humanizedText: result,
-            provider,
-            tone: selectedTone,
+            provider: provider,
         });
 
     } catch (error) {
-        console.error('API Error:', error);
+        console.error('Humanize API Error:', error);
+
+        if (error instanceof Error) {
+            return NextResponse.json(
+                { error: error.message },
+                { status: 500 }
+            );
+        }
 
         return NextResponse.json(
-            {
-                error: error instanceof Error ? error.message : 'An unexpected error occurred',
-                success: false,
-            },
+            { error: 'An unexpected error occurred' },
             { status: 500 }
         );
     }
