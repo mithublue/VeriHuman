@@ -200,32 +200,23 @@ export function AIDetector({ onHumanize }: AIDetectorProps) {
                                         <span className="text-sm text-gray-500">AI Score</span>
                                     </div>
                                 </div>
-                                <p className="text-xs text-gray-500 mt-2">Powered by {result.provider}</p>
+
                             </div>
 
-                            {/* Verdict Badge */}
+                            {/* Scale Legend - No Verdict Badge */}
                             <div className="flex-1 text-center md:text-left">
-                                <motion.div
-                                    initial={{ scale: 0.8, opacity: 0 }}
-                                    animate={{ scale: 1, opacity: 1 }}
-                                    transition={{ delay: 0.3 }}
-                                    className={`inline-flex items-center gap-2 px-6 py-3 rounded-full border-2 ${getVerdictColor(result.verdict)} font-semibold text-lg mb-4`}
-                                >
-                                    {getVerdictIcon(result.verdict)}
-                                    {result.verdict}
-                                </motion.div>
                                 <div className="space-y-2">
                                     <div className="flex items-center justify-center md:justify-start gap-2 text-sm text-gray-600">
                                         <div className="w-3 h-3 rounded-full bg-green-500"></div>
-                                        <span>0-30: Likely Human</span>
+                                        <span>0-30</span>
                                     </div>
                                     <div className="flex items-center justify-center md:justify-start gap-2 text-sm text-gray-600">
                                         <div className="w-3 h-3 rounded-full bg-yellow-500"></div>
-                                        <span>31-69: Mixed</span>
+                                        <span>31-69</span>
                                     </div>
                                     <div className="flex items-center justify-center md:justify-start gap-2 text-sm text-gray-600">
                                         <div className="w-3 h-3 rounded-full bg-red-500"></div>
-                                        <span>70-100: Likely AI</span>
+                                        <span>70-100</span>
                                     </div>
                                 </div>
                             </div>
@@ -274,8 +265,8 @@ export function AIDetector({ onHumanize }: AIDetectorProps) {
                         </motion.div>
                     </div>
 
-                    {/* Humanize Button (if score > 50) */}
-                    {result.score > 50 && onHumanize && (
+                    {/* Humanize Button - Always Show */}
+                    {onHumanize && (
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -283,7 +274,7 @@ export function AIDetector({ onHumanize }: AIDetectorProps) {
                             className="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-xl p-6 text-center"
                         >
                             <p className="text-gray-700 mb-4">
-                                Your content appears to be AI-generated. Want to make it sound more human?
+                                Want to make it humanize?
                             </p>
                             <button
                                 onClick={() => onHumanize(inputText)}

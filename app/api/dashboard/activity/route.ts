@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 
+// Force dynamic rendering - don't statically pre-render
+export const dynamic = 'force-dynamic';
+
 // Force Node.js runtime for Prisma compatibility
 export const runtime = 'nodejs';
 

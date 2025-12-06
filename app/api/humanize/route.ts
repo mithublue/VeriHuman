@@ -5,6 +5,8 @@ import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 import { headers } from 'next/headers';
 
+export const dynamic = 'force-dynamic';
+
 // Force Node.js runtime for Prisma compatibility
 export const runtime = 'nodejs';
 

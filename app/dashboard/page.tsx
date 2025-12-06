@@ -155,7 +155,10 @@ export default async function DashboardPage() {
                 </div>
 
                 {/* Activity Table */}
-                <ActivityTable activities={activities} />
+                <ActivityTable activities={activities.map(a => ({
+                    ...a,
+                    createdAt: a.createdAt.toISOString(),
+                }))} />
 
                 {/* Upgrade Section - Commented out until Pro feature is ready
                 <div className="mt-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl p-8 text-white">

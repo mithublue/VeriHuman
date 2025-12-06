@@ -4,6 +4,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { prisma } from '@/lib/prisma';
 
+export const dynamic = 'force-dynamic';
+
 // Force Node.js runtime for Prisma compatibility
 export const runtime = 'nodejs';
 
