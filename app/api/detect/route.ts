@@ -11,47 +11,66 @@ export const runtime = 'nodejs';
 
 // AI Detection Result Interface
 interface DetectionResult {
-    perplexity_analysis: string;
-    burstiness_analysis: string;
     ai_score: number;
-    verdict: 'Likely AI' | 'Likely Human' | 'Mixed';
-    reason: string;
+    verdict: 'Highly AI Generated' | 'Marketing / Template' | 'Possibly Mixed' | 'Likely Human';
+    analysis: {
+        perplexity_level: 'Low' | 'Medium' | 'High';
+        burstiness_level: 'Low' | 'Medium' | 'High';
+        detected_keywords: string[];
+        reasoning: string;
+    };
 }
 
-// Linguistic Forensic Analyst System Prompt
-const DETECTION_PROMPT = `Act as an expert Linguistic Forensic Analyst and AI Detection Engine. Your task is to analyze the provided text and calculate the probability of it being AI-generated based on specific mathematical and linguistic markers.
+// Inverse Variance-Entropy Model (IVEM) Prompt
+const DETECTION_PROMPT = `You are an expert Linguistic Analyst and Mathematician. Your task is to analyze a given text (in English, Bengali, or Arabic) and determine if it is AI-Generated or Human-Written.
 
-You must analyze the text across three distinct dimensions and calculate a weighted score.
+You must use a specific mathematical model called "The Inverse Variance-Entropy Model (IVEM)" to calculate an AI Score ($S_{AI}$) from 0 to 100.
 
-### Dimension 1: Perplexity & Vocabulary (Weight: 40%)
-- **Mechanism:** AI models minimize perplexity, choosing the most probable next word.
-- **Markers to punish (Increase AI Score):** Use of words like "delve", "realm", "tapestry", "underscores", "pivotal", "landscape", "crucial". Frequent use of transition words like "Moreover", "Furthermore", "In conclusion".
-- **Markers to reward (Decrease AI Score):** Use of slang, rare vocabulary, typos, colloquialisms, or highly specific proper nouns.
+### 1. The Formula Logic
+The score is derived based on this conceptual formula:
+$$S_{AI} = \\sigma \\left( \\frac{\\alpha}{P(T)^{\\lambda}} + \\frac{\\beta}{B(T)^{\\mu}} + \\gamma \\sum (w_i \\cdot f_i) - \\delta \\cdot E(T) \\right)$$
 
-### Dimension 2: Burstiness & Sentence Variance (Weight: 30%)
-- **Mechanism:** Humans write with high burstiness (mixing very short and very long sentences). AI writes with uniform sentence lengths (low standard deviation).
-- **Calculation:** Analyze the variance in sentence length.
-- **Scoring:**
-  - High Variance (e.g., a 4-word sentence followed by a 25-word sentence) = Low AI Score.
-  - Low Variance (Monotonous rhythm) = High AI Score.
+Where:
+- **P(T) - Perplexity:** Measure of unpredictability. 
+    - Low Perplexity (smooth, predictive) = High AI probability.
+    - High Perplexity (creative, chaotic) = Human probability.
+- **B(T) - Burstiness:** Measure of sentence variation (Standard Deviation).
+    - Low Burstiness (monotone sentence lengths) = High AI probability.
+    - High Burstiness (short and long mixed) = Human probability.
+- **Pattern Penalty ($\\sum w \\cdot f$):** Presence of specific AI keywords.
+- **E(T) - Entropy:** Emotional or grammatical inconsistencies (Human errors/emotions reduce AI score).
 
-### Dimension 3: Structural Patterns (Weight: 30%)
-- **Mechanism:** AI tends to be overly neutral, structured, and preachy.
-- **Markers:** Balanced arguments ("On the one hand..."), lack of strong personal opinion, excessive bullet points, repetitive intro/outro structures.
+### 2. Analysis Guidelines (Simulate these values)
 
-### Final Calculation Formula:
-AI_Score = (Dim1_Score * 0.4) + (Dim2_Score * 0.3) + (Dim3_Score * 0.3)
+**Step A: Check for Patterns (Weights)**
+Look for these specific keywords. If found, increase the AI Score significantly.
+- **Hard AI Words (High Weight):** "delve", "landscape", "tapestry", "crucial", "realm", "underscores", "nuance", "meticulous", "seamlessly", "সামগ্রিক", "বিপ্লব", "ল্যান্ডস্কেপ", "গুরুত্বপূর্ণ", "ভূমিকা পালন", "লুকিয়ে আছে", "দুর্দান্ত ফিচার", "في الختام", "بشكل عام", "نقلة نوعية", "علاوة على ذلك".
+- **Soft/Marketing Words (Low Weight):** "unlock", "elevate", "game-changer", "order now", "best choice", "solution", "নিয়ে এলো", "সেরা", "ম্যাজিক", "অফার", "অর্ডার করুন", "চিন্তা নেই", "عرض خاص", "اطلب الآن".
+- **Conversational/Chatbot Words (Medium Weight):** "I'm sorry", "As an AI", "cannot extract", "দুঃখিত", "পারি নি", "আমি এআই", "أنا آسف".
 
----
-### Output Format:
-You must return ONLY a JSON object. Do not provide any conversational text.
+**Step B: Estimate Perplexity & Burstiness**
+- If the text is perfectly grammatical but uses rare words strangely -> Low Perplexity (AI).
+- If the text has sentence structure like: Sentence A (10 words). Sentence B (11 words). Sentence C (10 words). -> Low Burstiness (AI).
+- If the text has: "Wow! No way. (3 words)" followed by a long complex explanation (30 words). -> High Burstiness (Human).
 
+**Step C: Apply The Logic**
+- **Scenario 1 (Pure AI):** Low Perplexity + Low Burstiness + Hard Keywords = Score 90-100%.
+- **Scenario 2 (Marketing/Templates):** Medium Perplexity + Low Burstiness + Soft Keywords = Score 60-75%.
+- **Scenario 3 (Human):** High Perplexity + High Burstiness + No Keywords = Score 0-20%.
+- **Scenario 4 (AI Assistant):** High Burstiness + Conversational Keywords = Score 95-100%.
+
+### 3. Output Format
+Return ONLY a valid JSON object. Do not include markdown formatting (\`\`\`json).
+Structure:
 {
-  "perplexity_analysis": "Brief note on vocabulary usage",
-  "burstiness_analysis": "Brief note on sentence structure variance",
-  "ai_score": number, (0 to 100, where 100 is fully AI)
-  "verdict": "Likely AI" or "Likely Human" or "Mixed",
-  "reason": "The main reason for this score"
+  "ai_score": number (0-100),
+  "verdict": string ("Highly AI Generated" | "Marketing / Template" | "Possibly Mixed" | "Likely Human"),
+  "analysis": {
+    "perplexity_level": string ("Low" | "Medium" | "High"),
+    "burstiness_level": string ("Low" | "Medium" | "High"),
+    "detected_keywords": string[],
+    "reasoning": string (Short explanation in Bengali or English based on input language)
+  }
 }`;
 
 // Parse JSON from LLM response (handles markdown code blocks)
@@ -70,9 +89,11 @@ function parseJSONResponse(response: string): DetectionResult {
         // Validate required fields
         if (typeof parsed.ai_score !== 'number' ||
             !parsed.verdict ||
-            !parsed.perplexity_analysis ||
-            !parsed.burstiness_analysis ||
-            !parsed.reason) {
+            !parsed.analysis ||
+            !parsed.analysis.perplexity_level ||
+            !parsed.analysis.burstiness_level ||
+            !Array.isArray(parsed.analysis.detected_keywords) ||
+            !parsed.analysis.reasoning) {
             throw new Error('Invalid response format');
         }
 
@@ -237,10 +258,15 @@ export async function POST(request: NextRequest) {
             success: true,
             score: result.ai_score,
             verdict: result.verdict,
-            perplexity_analysis: result.perplexity_analysis,
-            burstiness_analysis: result.burstiness_analysis,
-            reason: result.reason,
+            perplexity_analysis: `Perplexity Level: ${result.analysis.perplexity_level}`,
+            burstiness_analysis: `Burstiness Level: ${result.analysis.burstiness_level}`,
+            reason: result.analysis.reasoning,
             provider: provider,
+            details: {
+                perplexity_level: result.analysis.perplexity_level,
+                burstiness_level: result.analysis.burstiness_level,
+                detected_keywords: result.analysis.detected_keywords,
+            }
         });
 
     } catch (error) {
