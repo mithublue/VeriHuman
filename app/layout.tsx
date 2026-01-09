@@ -6,8 +6,12 @@ import './globals.css'
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-    title: 'AI Text Humanizer - Transform AI Content',
-    description: 'Bypass AI detection and refine your content with our advanced humanization engine',
+    title: 'VeriHuman - AI Detection & Text Humanization',
+    description: 'Detect AI-generated content and humanize text with advanced IVEM analysis. Transform AI writing into natural, human-like content.',
+    icons: {
+        icon: '/favicon.ico',
+        apple: '/logo.png',
+    },
 }
 
 export default function RootLayout({

@@ -1,5 +1,4 @@
 import { signIn } from "@/auth"
-import { Sparkles } from "lucide-react"
 
 export default function SignIn() {
     return (
@@ -7,8 +6,12 @@ export default function SignIn() {
             <div className="max-w-md w-full mx-4">
                 {/* Logo and Title */}
                 <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-primary-600 to-pink-600 rounded-2xl mb-4 shadow-lg">
-                        <Sparkles className="w-8 h-8 text-white" />
+                    <div className="inline-flex items-center justify-center w-16 h-16 mb-4">
+                        <img
+                            src="/logo.png"
+                            alt="VeriHuman Logo"
+                            className="w-16 h-16"
+                        />
                     </div>
                     <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome to VeriHuman</h1>
                     <p className="text-gray-600">Sign in to access AI text humanization</p>

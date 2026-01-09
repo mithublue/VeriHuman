@@ -113,9 +113,9 @@ async function detectWithGemini(text: string): Promise<DetectionResult> {
 
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
-        model: 'gemini-2.5-flash-lite',
+        model: 'gemini-2.5-flash-lite-preview-09-2025', // Stable model - 1500 RPD free tier
         generationConfig: {
-            temperature: 0.1, // Low temperature for consistent analysis
+            temperature: 0.1,
             responseMimeType: 'application/json',
         },
     });
@@ -123,6 +123,7 @@ async function detectWithGemini(text: string): Promise<DetectionResult> {
     const prompt = `${DETECTION_PROMPT}\n\nAnalyze this text:\n${text}`;
     const result = await model.generateContent(prompt);
     const response = result.response.text();
+    console.log('Gemini raw response:', response.substring(0, 200));
 
     if (!response) {
         throw new Error('Gemini returned empty response');

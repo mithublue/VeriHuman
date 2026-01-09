@@ -1,5 +1,5 @@
 import React from 'react';
-import { Sparkles, LogOut } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 import { auth } from '@/auth';
 import { signOut } from '@/auth';
 import Link from 'next/link';
@@ -13,9 +13,11 @@ export async function Header() {
                 <div className="flex justify-between items-center h-16">
                     {/* Logo */}
                     <Link href="/" className="flex items-center space-x-2">
-                        <div className="w-8 h-8 bg-gradient-to-br from-primary-600 to-pink-600 rounded-lg flex items-center justify-center">
-                            <Sparkles className="w-5 h-5 text-white" />
-                        </div>
+                        <img
+                            src="/logo.png"
+                            alt="VeriHuman Logo"
+                            className="w-8 h-8"
+                        />
                         <span className="text-xl font-bold text-gray-900">VeriHuman</span>
                     </Link>
 
