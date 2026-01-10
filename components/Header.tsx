@@ -28,15 +28,15 @@ export async function Header() {
                                 Dashboard
                             </Link>
                         )}
-                        <a href="#features" className="text-gray-600 hover:text-gray-900 transition-colors font-medium">
+                        <Link href="/features" className="text-gray-600 hover:text-gray-900 transition-colors font-medium">
                             Features
-                        </a>
-                        <a href="#pricing" className="text-gray-600 hover:text-gray-900 transition-colors font-medium">
+                        </Link>
+                        <Link href="/pricing" className="text-gray-600 hover:text-gray-900 transition-colors font-medium">
                             Pricing
-                        </a>
-                        <a href="#about" className="text-gray-600 hover:text-gray-900 transition-colors font-medium">
+                        </Link>
+                        <Link href="/about" className="text-gray-600 hover:text-gray-900 transition-colors font-medium">
                             About
-                        </a>
+                        </Link>
                     </nav>
 
                     {/* Auth Section */}
