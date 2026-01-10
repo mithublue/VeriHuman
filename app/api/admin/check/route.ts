@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { isAdmin } from '@/lib/admin';
 
+export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
 // Simple admin check endpoint for client-side
