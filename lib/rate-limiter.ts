@@ -122,6 +122,18 @@ export async function checkRateLimit(
         }
     }
 
+    // Ensure user exists in database before creating rate limit record
+    // This prevents foreign key constraint violations
+    try {
+        await prisma.user.findUniqueOrThrow({
+            where: { id: userId }
+        });
+    } catch (error) {
+        // User doesn't exist, which shouldn't happen if auth is working
+        console.error('User not found in database:', userId);
+        throw new Error('User not found. Please sign in again.');
+    }
+
     // Record this request
     await prisma.rateLimit.create({
         data: {

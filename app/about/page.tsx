@@ -29,8 +29,8 @@ export default async function AboutPage() {
     ];
 
     const stats = [
-        { number: "10K+", label: "Active Users" },
-        { number: "1M+", label: "Words Processed" },
+        { number: "New", label: "Launched 2026" },
+        { number: "Free", label: "Beta Access" },
         { number: "99.9%", label: "Uptime" },
         { number: "24/7", label: "Support" }
     ];

@@ -43,28 +43,37 @@ export async function GET(request: NextRequest) {
         const totalDetections = totalActivities.find(a => a.type === 'detect')?._count || 0;
         const totalWordsProcessed = totalActivities.reduce((sum, a) => sum + (a._sum.wordCount || 0), 0);
 
-        // Get model usage statistics
-        const modelUsage = await prisma.activityLog.groupBy({
+        // Get model usage statistics from ApiUsage table
+        const modelUsage = await prisma.apiUsage.groupBy({
             by: ['provider'],
-            _count: true,
-            where: {
-                provider: {
-                    not: null,
-                },
+            _count: {
+                id: true
             },
             orderBy: {
                 _count: {
-                    provider: 'desc',
+                    id: 'desc',
                 },
             },
         });
 
-        const totalRequests = modelUsage.reduce((sum, m) => sum + m._count, 0);
-        const modelStats = modelUsage.map(m => ({
-            provider: m.provider || 'Unknown',
-            count: m._count,
-            percentage: totalRequests > 0 ? Math.round((m._count / totalRequests) * 100) : 0,
-        }));
+        const totalRequests = modelUsage.reduce((sum, m) => sum + m._count.id, 0);
+        const modelStats = modelUsage.map(m => {
+            // Format provider names for display
+            let displayName = m.provider;
+            if (m.provider === 'gemini' || m.provider === 'google_gemini') {
+                displayName = 'Google Gemini';
+            } else if (m.provider === 'openrouter' || m.provider === 'openrouter_(llama)') {
+                displayName = 'OpenRouter (Llama)';
+            } else if (m.provider === 'pollinations.ai' || m.provider === 'pollinations') {
+                displayName = 'Pollinations';
+            }
+
+            return {
+                provider: displayName,
+                count: m._count.id,
+                percentage: totalRequests > 0 ? Math.round((m._count.id / totalRequests) * 100) : 0,
+            };
+        });
 
         // Get daily usage for last 7 days
         const sevenDaysAgo = new Date();

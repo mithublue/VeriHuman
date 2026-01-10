@@ -21,6 +21,7 @@ export function HomeClient() {
     const [provider, setProvider] = useState('');
     const [error, setError] = useState('');
     const [showTimeSaved, setShowTimeSaved] = useState(false);
+    const [countdown, setCountdown] = useState<number | null>(null);
 
     // Check authentication status
     useEffect(() => {
@@ -39,6 +40,23 @@ export function HomeClient() {
         };
         checkAuth();
     }, []);
+
+    // Live countdown timer for rate limits
+    useEffect(() => {
+        if (countdown === null || countdown <= 0) return;
+
+        const timer = setInterval(() => {
+            setCountdown(prev => {
+                if (prev === null || prev <= 1) {
+                    setError(''); // Clear error when countdown ends
+                    return null;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, [countdown]);
 
     const inputWordCount = inputText.trim().split(/\s+/).filter(Boolean).length;
     const outputWordCount = outputText.trim().split(/\s+/).filter(Boolean).length;
@@ -67,6 +85,10 @@ export function HomeClient() {
             const data = await response.json();
 
             if (!response.ok) {
+                // Handle rate limit errors with countdown
+                if (response.status === 429 && data.resetIn) {
+                    setCountdown(data.resetIn);
+                }
                 throw new Error(data.error || 'Failed to humanize text');
             }
 
@@ -212,10 +234,18 @@ export function HomeClient() {
                                 )}
                             </div>
 
-                            {/* Error Message */}
+                            {/* Error Message with Live Countdown */}
                             {error && (
                                 <div className="max-w-4xl mx-auto bg-red-50 border border-red-200 rounded-lg p-4">
-                                    <p className="text-sm text-red-800">{error}</p>
+                                    <p className="text-sm text-red-800">
+                                        {countdown !== null && countdown > 0 ? (
+                                            <>
+                                                🚫 Rate limit: 1 request per minute. Please wait <strong className="font-bold">{countdown}</strong> seconds.
+                                            </>
+                                        ) : (
+                                            error
+                                        )}
+                                    </p>
                                 </div>
                             )}
 

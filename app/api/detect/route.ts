@@ -189,6 +189,57 @@ async function detectAI(text: string): Promise<{ result: DetectionResult; provid
 // API Route Handler
 export async function POST(request: NextRequest) {
     try {
+        // Import rate limiter
+        const { checkRateLimit, trackApiUsage } = await import('@/lib/rate-limiter');
+
+        // Check authentication
+        const session = await auth();
+        if (!session?.user?.id) {
+            return NextResponse.json(
+                { error: 'Please sign in to use this feature' },
+                { status: 401 }
+            );
+        }
+
+        // Ensure user exists in database (prevents foreign key errors)
+        await prisma.user.upsert({
+            where: { id: session.user.id },
+            update: {
+                lastActivity: new Date(),
+            },
+            create: {
+                id: session.user.id,
+                email: session.user.email!,
+                name: session.user.name,
+                image: session.user.image,
+                lastActivity: new Date(),
+            },
+        });
+
+        // Check rate limit (Free tier: 1 req/min, 30s cooldown)
+        const rateLimit = await checkRateLimit(
+            session.user.id,
+            'detect',
+            'free' // TODO: Get from user subscription when implemented
+        );
+
+        if (!rateLimit.allowed) {
+            return NextResponse.json(
+                {
+                    error: rateLimit.message,
+                    remaining: rateLimit.remaining,
+                    resetIn: rateLimit.resetIn,
+                    rateLimited: true
+                },
+                { status: 429 }
+            );
+        }
+
+        // Queue wait if needed (5 seconds for free tier)
+        if (rateLimit.queueWait > 0) {
+            await new Promise(resolve => setTimeout(resolve, rateLimit.queueWait * 1000));
+        }
+
         const body = await request.json();
         const { text } = body;
 
@@ -214,42 +265,48 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
+
         // Execute AI detection with cascading fallback
         const { result, provider } = await detectAI(text);
 
-        // Log activity if user is authenticated
+        // Track successful usage
+        await trackApiUsage(
+            session.user.id,
+            'detect',
+            provider.toLowerCase().replace(/\s+/g, '_'),
+            wordCount,
+            true
+        );
+
+        // Log activity (keep existing activity log for compatibility)
         try {
-            const session = await auth();
-            if (session?.user?.email) {
-                const wordCount = text.trim().split(/\\s+/).filter(Boolean).length;
+            // Find or create user
+            const user = await prisma.user.upsert({
+                where: { email: session.user.email! },
+                update: {
+                    totalDetections: { increment: 1 },
+                    lastActivity: new Date(),
+                },
+                create: {
+                    email: session.user.email!,
+                    name: session.user.name,
+                    image: session.user.image,
+                    totalDetections: 1,
+                    lastActivity: new Date(),
+                },
+            });
 
-                // Find or create user
-                const user = await prisma.user.upsert({
-                    where: { email: session.user.email },
-                    update: {
-                        totalDetections: { increment: 1 },
-                        lastActivity: new Date(),
-                    },
-                    create: {
-                        email: session.user.email!,
-                        name: session.user.name,
-                        image: session.user.image,
-                        totalDetections: 1,
-                        lastActivity: new Date(),
-                    },
-                });
-
-                // Log activity
-                await prisma.activityLog.create({
-                    data: {
-                        userId: user.id,
-                        type: 'detect',
-                        provider: provider,
-                        wordCount,
-                        status: 'success',
-                    },
-                });
-            }
+            // Log activity
+            await prisma.activityLog.create({
+                data: {
+                    userId: user.id,
+                    type: 'detect',
+                    provider: provider,
+                    wordCount,
+                    status: 'success',
+                },
+            });
         } catch (dbError) {
             console.error('Failed to log detection activity:', dbError);
             // Don't fail the request if logging fails
@@ -263,6 +320,8 @@ export async function POST(request: NextRequest) {
             burstiness_analysis: `Burstiness Level: ${result.analysis.burstiness_level}`,
             reason: result.analysis.reasoning,
             provider: provider,
+            remaining: rateLimit.remaining,
+            resetIn: rateLimit.resetIn,
             details: {
                 perplexity_level: result.analysis.perplexity_level,
                 burstiness_level: result.analysis.burstiness_level,
@@ -272,6 +331,24 @@ export async function POST(request: NextRequest) {
 
     } catch (error) {
         console.error('AI Detection API Error:', error);
+
+        // Track failed usage if we have session
+        try {
+            const { trackApiUsage } = await import('@/lib/rate-limiter');
+            const session = await auth();
+
+            if (session?.user?.id) {
+                await trackApiUsage(
+                    session.user.id,
+                    'detect',
+                    'unknown',
+                    0,
+                    false
+                );
+            }
+        } catch (trackError) {
+            console.error('Failed to track error:', trackError);
+        }
 
         return NextResponse.json(
             {

@@ -348,9 +348,63 @@ async function humanizeText(text: string, tone: string): Promise<{ result: strin
     throw new Error('All AI providers failed. Please try again later.');
 }
 
+
 // API Route Handler
 export async function POST(request: NextRequest) {
     try {
+        // Import auth dynamically to avoid circular dependencies
+        const { auth } = await import('@/auth');
+        const { checkRateLimit, trackApiUsage } = await import('@/lib/rate-limiter');
+
+        // Check authentication
+        const session = await auth();
+        if (!session?.user?.id) {
+            return NextResponse.json(
+                { error: 'Please sign in to use this feature' },
+                { status: 401 }
+            );
+        }
+
+        // Ensure user exists in database (prevents foreign key errors)
+        const { prisma } = await import('@/lib/prisma');
+        await prisma.user.upsert({
+            where: { id: session.user.id },
+            update: {
+                lastActivity: new Date(),
+            },
+            create: {
+                id: session.user.id,
+                email: session.user.email!,
+                name: session.user.name,
+                image: session.user.image,
+                lastActivity: new Date(),
+            },
+        });
+
+        // Check rate limit (Free tier: 1 req/min, 30s cooldown)
+        const rateLimit = await checkRateLimit(
+            session.user.id,
+            'humanize',
+            'free' // TODO: Get from user subscription when implemented
+        );
+
+        if (!rateLimit.allowed) {
+            return NextResponse.json(
+                {
+                    error: rateLimit.message,
+                    remaining: rateLimit.remaining,
+                    resetIn: rateLimit.resetIn,
+                    rateLimited: true
+                },
+                { status: 429 }
+            );
+        }
+
+        // Queue wait if needed (5 seconds for free tier)
+        if (rateLimit.queueWait > 0) {
+            await new Promise(resolve => setTimeout(resolve, rateLimit.queueWait * 1000));
+        }
+
         const body = await request.json();
         const { text, tone } = body;
 
@@ -386,18 +440,50 @@ export async function POST(request: NextRequest) {
             );
         }
 
+        const wordCount = text.split(/\s+/).length;
+
         // Execute cascading fallback
         const { result, provider } = await humanizeText(text, selectedTone);
+
+        // Track successful usage
+        await trackApiUsage(
+            session.user.id,
+            'humanize',
+            provider.toLowerCase().replace(/\s+/g, '_'),
+            wordCount,
+            true
+        );
 
         return NextResponse.json({
             success: true,
             humanizedText: result,
             provider,
             tone: selectedTone,
+            remaining: rateLimit.remaining,
+            resetIn: rateLimit.resetIn
         });
 
     } catch (error) {
         console.error('API Error:', error);
+
+        // Track failed usage if we have session
+        try {
+            const { auth } = await import('@/auth');
+            const { trackApiUsage } = await import('@/lib/rate-limiter');
+            const session = await auth();
+
+            if (session?.user?.id) {
+                await trackApiUsage(
+                    session.user.id,
+                    'humanize',
+                    'unknown',
+                    0,
+                    false
+                );
+            }
+        } catch (trackError) {
+            console.error('Failed to track error:', trackError);
+        }
 
         return NextResponse.json(
             {
