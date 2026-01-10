@@ -1,4 +1,4 @@
-import { signInWithGoogle, signInWithFacebook } from "@/app/actions/auth"
+import { signIn } from "@/auth"
 
 export default function SignIn() {
     return (
@@ -21,7 +21,12 @@ export default function SignIn() {
                 <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
                     <div className="space-y-4">
                         {/* Google Sign In */}
-                        <form action={signInWithGoogle}>
+                        <form
+                            action={async () => {
+                                "use server"
+                                await signIn("google", { redirectTo: "/" })
+                            }}
+                        >
                             <button
                                 type="submit"
                                 className="w-full flex items-center justify-center gap-3 px-6 py-3 bg-white border-2 border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-md transition-all font-medium text-gray-700"
@@ -49,7 +54,12 @@ export default function SignIn() {
                         </form>
 
                         {/* Facebook Sign In */}
-                        <form action={signInWithFacebook}>
+                        <form
+                            action={async () => {
+                                "use server"
+                                await signIn("facebook", { redirectTo: "/" })
+                            }}
+                        >
                             <button
                                 type="submit"
                                 className="w-full flex items-center justify-center gap-3 px-6 py-3 bg-[#1877F2] hover:bg-[#166FE5] text-white rounded-lg transition-all font-medium shadow-sm"
