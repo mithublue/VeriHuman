@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma';
 
 // Force Node.js runtime for Prisma compatibility
 export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
 
 export async function DELETE(request: NextRequest) {
     try {

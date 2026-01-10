@@ -2,6 +2,9 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import OpenAI from 'openai';
 import { NextRequest, NextResponse } from 'next/server';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 // System prompt for humanizing AI text
 const getSystemPrompt = (tone: string): string => {
     const toneInstructions = {

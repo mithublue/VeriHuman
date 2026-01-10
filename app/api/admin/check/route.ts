@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
+import { isAdmin } from '@/lib/admin';
 
 export const dynamic = 'force-dynamic';
-import { isAdmin } from '@/lib/admin';
 
 // Simple admin check endpoint for client-side
 export async function GET(request: NextRequest) {
