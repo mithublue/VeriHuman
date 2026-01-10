@@ -6,6 +6,9 @@ import { Sidebar } from '@/components/dashboard/Sidebar';
 import { Users, FileText, Search, TrendingUp, BarChart3 } from 'lucide-react';
 import { StatsCard } from '@/components/dashboard/StatsCard';
 
+// Force dynamic rendering - don't try to build this page statically
+export const dynamic = 'force-dynamic';
+
 export default async function AdminPage() {
     const session = await auth();
 

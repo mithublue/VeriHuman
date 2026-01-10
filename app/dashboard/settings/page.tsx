@@ -3,6 +3,9 @@ import { auth } from '@/auth';
 import { Sidebar } from '@/components/dashboard/Sidebar';
 import { SettingsClient } from '@/components/dashboard/SettingsClient';
 
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
+
 export default async function SettingsPage() {
     const session = await auth();
 

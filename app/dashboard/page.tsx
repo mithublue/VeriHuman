@@ -6,6 +6,9 @@ import { StatsCard } from '@/components/dashboard/StatsCard';
 import { ActivityTable } from '@/components/dashboard/ActivityTable';
 import { FileText, Search, Clock, TrendingUp } from 'lucide-react';
 
+// Force dynamic rendering - don't try to build this page statically
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardPage() {
     const session = await auth();
 
