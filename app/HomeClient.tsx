@@ -13,7 +13,7 @@ type TabType = 'humanize' | 'detect';
 export function HomeClient() {
     const [isSignedIn, setIsSignedIn] = useState(false);
     const [isLoaded, setIsLoaded] = useState(false);
-    const [activeTab, setActiveTab] = useState<TabType>('humanize');
+    const [activeTab, setActiveTab] = useState<TabType>('detect');
     const [inputText, setInputText] = useState('');
     const [outputText, setOutputText] = useState('');
     const [selectedTone, setSelectedTone] = useState('standard');
@@ -151,16 +151,6 @@ export function HomeClient() {
                     <div className="flex justify-center">
                         <div className="inline-flex bg-white rounded-lg border border-gray-200 p-1 shadow-sm">
                             <button
-                                onClick={() => setActiveTab('humanize')}
-                                className={`inline-flex items-center px-6 py-2.5 rounded-md font-medium transition-all ${activeTab === 'humanize'
-                                    ? 'bg-gradient-to-r from-blue-600 via-purple-600 to-purple-800 text-white shadow-sm'
-                                    : 'text-gray-600 hover:text-gray-900'
-                                    }`}
-                            >
-                                <Wand2 className="w-4 h-4 mr-2" />
-                                Humanizer
-                            </button>
-                            <button
                                 onClick={() => setActiveTab('detect')}
                                 className={`inline-flex items-center px-6 py-2.5 rounded-md font-medium transition-all ${activeTab === 'detect'
                                     ? 'bg-gradient-to-r from-blue-600 via-purple-600 to-purple-800 text-white shadow-sm'
@@ -169,6 +159,16 @@ export function HomeClient() {
                             >
                                 <Search className="w-4 h-4 mr-2" />
                                 AI Detector
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('humanize')}
+                                className={`inline-flex items-center px-6 py-2.5 rounded-md font-medium transition-all ${activeTab === 'humanize'
+                                    ? 'bg-gradient-to-r from-blue-600 via-purple-600 to-purple-800 text-white shadow-sm'
+                                    : 'text-gray-600 hover:text-gray-900'
+                                    }`}
+                            >
+                                <Wand2 className="w-4 h-4 mr-2" />
+                                Humanizer
                             </button>
                         </div>
                     </div>
