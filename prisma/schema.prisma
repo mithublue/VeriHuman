@@ -23,6 +23,8 @@ model User {
   lastActivity          DateTime?
   
   activities            ActivityLog[]
+  rateLimits            RateLimit[]
+  apiUsage              ApiUsage[]
   accounts              Account[]
   sessions              Session[]
   
@@ -81,4 +83,30 @@ model ActivityLog {
   @@index([userId, createdAt])
   @@index([createdAt])
   @@index([provider, createdAt])
+}
+
+model RateLimit {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String   // 'humanize' or 'detect'
+  timestamp DateTime @default(now())
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, action, timestamp])
+}
+
+model ApiUsage {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String   // 'humanize' or 'detect'
+  provider  String   // 'gemini', 'openrouter', 'pollinations'
+  wordCount Int
+  success   Boolean
+  timestamp DateTime @default(now())
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId, action, timestamp])
+  @@index([provider, timestamp])
 }
