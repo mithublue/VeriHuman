@@ -11,7 +11,7 @@ export default async function PricingPage() {
 
             <main className="flex-1">
                 {/* Hero Section */}
-                <section className="bg-gradient-to-br from-purple-600 via-purple-700 to-pink-600 text-white py-20">
+                <section className="bg-gradient-to-br from-blue-600 via-purple-600 to-purple-800 text-white py-20">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                         <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 rounded-2xl mb-6 backdrop-blur-sm animate-scale-in">
                             <Sparkles className="w-10 h-10" />
@@ -30,7 +30,7 @@ export default async function PricingPage() {
                     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
                         <div className="bg-white rounded-2xl shadow-xl border-2 border-purple-200 overflow-hidden animate-fade-in-up">
                             {/* Header */}
-                            <div className="bg-gradient-to-r from-purple-600 to-pink-600 px-8 py-12 text-center">
+                            <div className="bg-gradient-to-r from-blue-600 via-purple-600 to-purple-800 px-8 py-12 text-center">
                                 <div className="inline-flex items-center justify-center w-16 h-16 bg-white/20 rounded-2xl mb-4 backdrop-blur-sm">
                                     <Bell className="w-8 h-8 text-white" />
                                 </div>
@@ -59,7 +59,7 @@ export default async function PricingPage() {
                                         <div className="text-3xl font-bold text-purple-600 mb-2">Free</div>
                                         <div className="text-gray-600">For individuals getting started</div>
                                     </div>
-                                    <div className="bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl p-6 text-center transform scale-105 shadow-xl">
+                                    <div className="bg-gradient-to-br from-blue-600 via-purple-600 to-purple-800 rounded-xl p-6 text-center transform scale-105 shadow-xl">
                                         <div className="text-3xl font-bold text-white mb-2">Pro</div>
                                         <div className="text-purple-100">For power users and professionals</div>
                                     </div>
@@ -138,7 +138,7 @@ export default async function PricingPage() {
                 </section>
 
                 {/* CTA Section */}
-                <section className="bg-gradient-to-r from-purple-600 to-pink-600 py-16">
+                <section className="bg-gradient-to-r from-blue-600 via-purple-600 to-purple-800 py-16">
                     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                         <h2 className="text-3xl font-bold text-white mb-4">
                             Start Using VeriHuman Today

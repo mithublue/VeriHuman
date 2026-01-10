@@ -60,7 +60,7 @@ export function Sidebar() {
                             key={item.href}
                             href={item.href}
                             className={`flex items-center px-4 py-3 rounded-lg transition-colors ${isActive
-                                ? 'bg-primary-50 text-primary-700 font-medium'
+                                ? 'bg-gradient-to-r from-blue-100 to-purple-100 text-purple-700 font-medium'
                                 : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                                 }`}
                         >

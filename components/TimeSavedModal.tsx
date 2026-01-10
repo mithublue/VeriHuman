@@ -62,7 +62,7 @@ export function TimeSavedModal({ isOpen, onClose, wordCount }: TimeSavedModalPro
 
                 {/* Main Message */}
                 <div className="text-center mb-6">
-                    <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent mb-2">
+                    <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-purple-800 bg-clip-text text-transparent mb-2">
                         Time Saved! 🎉
                     </h2>
                     <p className="text-gray-600 text-lg">{randomMessage}</p>
@@ -72,7 +72,7 @@ export function TimeSavedModal({ isOpen, onClose, wordCount }: TimeSavedModalPro
                 <div className="bg-white rounded-xl p-6 shadow-lg mb-6 border border-purple-100">
                     <div className="flex items-center justify-center space-x-2 mb-2">
                         <Zap className="w-8 h-8 text-yellow-500 animate-pulse" />
-                        <div className="text-5xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                        <div className="text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-purple-800 bg-clip-text text-transparent">
                             {timeSaved}
                         </div>
                         <span className="text-2xl text-gray-600">min</span>
@@ -101,7 +101,7 @@ export function TimeSavedModal({ isOpen, onClose, wordCount }: TimeSavedModalPro
                 {/* CTA Button */}
                 <button
                     onClick={onClose}
-                    className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold py-3 rounded-lg hover:from-purple-700 hover:to-pink-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+                    className="w-full bg-gradient-to-r from-blue-600 via-purple-600 to-purple-800 text-white font-semibold py-3 rounded-lg hover:from-blue-700 hover:to-purple-900 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
                 >
                     Awesome! Keep Going 🚀
                 </button>

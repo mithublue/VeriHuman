@@ -41,7 +41,7 @@ export function TimeSavedCard({ wordCount, type = 'humanize' }: TimeSavedCardPro
             <div className="bg-white rounded-lg p-4 mb-4 border border-purple-100">
                 <div className="flex items-center justify-center space-x-2">
                     <Zap className="w-6 h-6 text-yellow-500" />
-                    <span className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                    <span className="text-4xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-purple-800 bg-clip-text text-transparent">
                         {timeSaved}
                     </span>
                     <span className="text-xl text-gray-600">min</span>

@@ -125,7 +125,7 @@ export default async function FeaturesPage() {
 
             <main className="flex-1">
                 {/* Hero Section */}
-                <section className="bg-gradient-to-br from-purple-600 via-purple-700 to-pink-600 text-white py-20">
+                <section className="bg-gradient-to-br from-blue-600 via-purple-600 to-purple-800 text-white py-20">
                     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                         <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 rounded-2xl mb-6 backdrop-blur-sm animate-scale-in">
                             <Sparkles className="w-10 h-10" />
@@ -139,7 +139,7 @@ export default async function FeaturesPage() {
                         <div className="animate-fade-in-up animate-delay-300">
                             <Link
                                 href="/"
-                                className="inline-block bg-white text-purple-600 px-8 py-4 rounded-lg font-semibold hover:bg-purple-50 transition-all shadow-lg hover:shadow-xl"
+                                className="inline-block bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold hover:bg-blue-50 transition-all shadow-lg hover:shadow-xl"
                             >
                                 Try It Free
                             </Link>
@@ -193,7 +193,7 @@ export default async function FeaturesPage() {
                 </section>
 
                 {/* CTA Section */}
-                <section className="bg-gradient-to-r from-purple-600 to-pink-600 py-16">
+                <section className="bg-gradient-to-r from-blue-600 via-purple-600 to-purple-800 py-16">
                     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
                         <h2 className="text-3xl font-bold text-white mb-4 animate-fade-in">
                             Ready to Transform Your Content?
@@ -204,7 +204,7 @@ export default async function FeaturesPage() {
                         <div className="animate-fade-in animate-delay-200">
                             <Link
                                 href="/auth/signin"
-                                className="inline-block bg-white text-purple-600 px-8 py-4 rounded-lg font-semibold hover:bg-purple-50 transition-all shadow-lg hover:shadow-xl"
+                                className="inline-block bg-white text-blue-600 px-8 py-4 rounded-lg font-semibold hover:bg-blue-50 transition-all shadow-lg hover:shadow-xl"
                             >
                                 Get Started Free
                             </Link>
