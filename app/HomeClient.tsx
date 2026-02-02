@@ -287,10 +287,18 @@ export function HomeClient() {
 
                 {/* Footer */}
                 <footer className="bg-white border-t border-gray-200 mt-16">
-                    <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
-                        <p className="text-center text-sm text-gray-500">
+                    <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                        <p className="text-sm text-gray-500">
                             &copy; {new Date().getFullYear()} VeriHuman. Built for quality content.
                         </p>
+                        <div className="flex gap-6">
+                            <Link
+                                href="/privacy"
+                                className="text-sm text-gray-600 hover:text-blue-600 transition-colors font-medium"
+                            >
+                                Privacy Policy
+                            </Link>
+                        </div>
                     </div>
                 </footer>
             </main>
