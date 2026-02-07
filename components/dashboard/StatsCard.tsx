@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { BarChart3, FileText, Clock, TrendingUp } from 'lucide-react';
 
 interface StatsCardProps {
@@ -9,6 +10,7 @@ interface StatsCardProps {
     icon: React.ReactNode;
     trend?: string;
     color: 'purple' | 'blue' | 'green' | 'orange';
+    href?: string;
 }
 
 const colorClasses = {
@@ -18,9 +20,9 @@ const colorClasses = {
     orange: 'from-orange-500 to-orange-600',
 };
 
-export function StatsCard({ title, value, icon, trend, color }: StatsCardProps) {
-    return (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
+export function StatsCard({ title, value, icon, trend, color, href }: StatsCardProps) {
+    const content = (
+        <div className={`bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow ${href ? 'cursor-pointer' : ''}`}>
             <div className="flex items-center justify-between mb-4">
                 <div className={`w-12 h-12 rounded-lg bg-gradient-to-br ${colorClasses[color]} flex items-center justify-center text-white`}>
                     {icon}
@@ -36,4 +38,10 @@ export function StatsCard({ title, value, icon, trend, color }: StatsCardProps) 
             <p className="text-3xl font-bold text-gray-900">{value}</p>
         </div>
     );
+
+    if (href) {
+        return <Link href={href}>{content}</Link>;
+    }
+
+    return content;
 }

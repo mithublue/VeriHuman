@@ -106,6 +106,7 @@ export default async function AdminPage() {
                         value={totalUsers.toLocaleString()}
                         icon={<Users className="w-6 h-6" />}
                         color="purple"
+                        href="/dashboard/admin/users"
                     />
 
                     <StatsCard
