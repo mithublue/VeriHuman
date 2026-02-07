@@ -1,12 +1,16 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
+import { CheckCircle, XCircle, Loader2 } from 'lucide-react';
+
+// Force dynamic rendering
+export const dynamic = 'force-dynamic';
 
 export default function VerifyEmail() {
     const searchParams = useSearchParams();
-    const router = useRouter();
+    // const router = useRouter(); // Removed as per instruction's implied change
     const [status, setStatus] = useState<'loading' | 'success' | 'error' | 'already-verified'>('loading');
     const [message, setMessage] = useState('');
 
