@@ -5,6 +5,7 @@ import { prisma } from '@/lib/prisma';
 import { Sidebar } from '@/components/dashboard/Sidebar';
 import { Users, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { UsersTable } from '@/components/dashboard/UsersTable';
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic';
@@ -22,7 +23,7 @@ export default async function UsersListPage() {
         redirect('/dashboard');
     }
 
-    // Fetch all users
+    // Fetch all users with verification status
     const users = await prisma.user.findMany({
         orderBy: {
             createdAt: 'desc',
@@ -32,6 +33,8 @@ export default async function UsersListPage() {
             name: true,
             email: true,
             image: true,
+            emailVerified: true,
+            isActive: true,
             createdAt: true,
             updatedAt: true,
         },
@@ -67,68 +70,7 @@ export default async function UsersListPage() {
                 {/* Users Table */}
                 <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                     {users.length > 0 ? (
-                        <div className="overflow-x-auto">
-                            <table className="w-full">
-                                <thead className="bg-gray-50 border-b border-gray-200">
-                                    <tr>
-                                        <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">User</th>
-                                        <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">Email</th>
-                                        <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">Joined</th>
-                                        <th className="text-left py-4 px-6 text-sm font-semibold text-gray-700">Last Updated</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-100">
-                                    {users.map((user) => (
-                                        <tr key={user.id} className="hover:bg-gray-50 transition-colors">
-                                            <td className="py-4 px-6">
-                                                <div className="flex items-center">
-                                                    {user.image ? (
-                                                        <img
-                                                            src={user.image}
-                                                            alt={user.name || 'User'}
-                                                            className="w-10 h-10 rounded-full mr-3"
-                                                        />
-                                                    ) : (
-                                                        <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center mr-3">
-                                                            <span className="text-purple-600 font-semibold text-sm">
-                                                                {user.name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()}
-                                                            </span>
-                                                        </div>
-                                                    )}
-                                                    <div>
-                                                        <p className="font-medium text-gray-900">
-                                                            {user.name || 'No name'}
-                                                        </p>
-                                                        {isAdmin(user.email) && (
-                                                            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
-                                                                Admin
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td className="py-4 px-6 text-gray-700">
-                                                {user.email}
-                                            </td>
-                                            <td className="py-4 px-6 text-gray-600">
-                                                {new Date(user.createdAt).toLocaleDateString('en-US', {
-                                                    year: 'numeric',
-                                                    month: 'short',
-                                                    day: 'numeric',
-                                                })}
-                                            </td>
-                                            <td className="py-4 px-6 text-gray-600">
-                                                {new Date(user.updatedAt).toLocaleDateString('en-US', {
-                                                    year: 'numeric',
-                                                    month: 'short',
-                                                    day: 'numeric',
-                                                })}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                        <UsersTable users={users} currentUserEmail={session.user.email} />
                     ) : (
                         <div className="text-center py-12">
                             <Users className="w-12 h-12 text-gray-400 mx-auto mb-4" />

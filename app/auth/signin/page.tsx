@@ -2,21 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { signIn } from "next-auth/react";
-import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 
 export default function SignIn() {
-    const router = useRouter();
-    const searchParams = useSearchParams();
     const [mounted, setMounted] = useState(false);
-    const registered = searchParams.get('registered');
-
-    const [formData, setFormData] = useState({
-        email: '',
-        password: '',
-    });
-    const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         setMounted(true);
@@ -24,41 +13,6 @@ export default function SignIn() {
 
     const handleGoogleSignIn = async () => {
         await signIn("google", { callbackUrl: "/" });
-    };
-
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value,
-        });
-        setError('');
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        setError('');
-        setLoading(true);
-
-        try {
-            const result = await signIn('credentials', {
-                email: formData.email,
-                password: formData.password,
-                redirect: false,
-            });
-
-            if (result?.error) {
-                setError('Invalid email or password');
-                setLoading(false);
-                return;
-            }
-
-            // Sign in successful
-            router.push('/');
-            router.refresh();
-        } catch (err) {
-            setError('An error occurred. Please try again.');
-            setLoading(false);
-        }
     };
 
     if (!mounted) {
@@ -91,76 +45,6 @@ export default function SignIn() {
 
                 {/* Sign In Card */}
                 <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
-                    {/* Success Message */}
-                    {registered && (
-                        <div className="mb-4 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg text-sm">
-                            Account created successfully! Please sign in.
-                        </div>
-                    )}
-
-                    {/* Email/Password Form */}
-                    <form onSubmit={handleSubmit} className="space-y-4 mb-6">
-                        {/* Error Message */}
-                        {error && (
-                            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
-                                {error}
-                            </div>
-                        )}
-
-                        {/* Email Input */}
-                        <div>
-                            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                                Email Address
-                            </label>
-                            <input
-                                type="email"
-                                id="email"
-                                name="email"
-                                value={formData.email}
-                                onChange={handleChange}
-                                required
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                                placeholder="you@example.com"
-                            />
-                        </div>
-
-                        {/* Password Input */}
-                        <div>
-                            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-                                Password
-                            </label>
-                            <input
-                                type="password"
-                                id="password"
-                                name="password"
-                                value={formData.password}
-                                onChange={handleChange}
-                                required
-                                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
-                                placeholder="Enter your password"
-                            />
-                        </div>
-
-                        {/* Submit Button */}
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white py-3 rounded-lg font-medium hover:from-purple-700 hover:to-pink-700 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {loading ? 'Signing in...' : 'Sign In'}
-                        </button>
-                    </form>
-
-                    {/* Divider */}
-                    <div className="relative my-6">
-                        <div className="absolute inset-0 flex items-center">
-                            <div className="w-full border-t border-gray-200"></div>
-                        </div>
-                        <div className="relative flex justify-center text-sm">
-                            <span className="px-4 bg-white text-gray-500">Or continue with</span>
-                        </div>
-                    </div>
-
                     {/* Google Sign In */}
                     <button
                         onClick={handleGoogleSignIn}
@@ -187,14 +71,14 @@ export default function SignIn() {
                         Continue with Google
                     </button>
 
-                    {/* Sign Up Link */}
-                    <div className="mt-6 text-center">
-                        <p className="text-sm text-gray-600">
-                            Don't have an account?{' '}
-                            <Link href="/auth/signup" className="text-purple-600 hover:text-purple-700 font-medium">
-                                Sign up
-                            </Link>
-                        </p>
+                    {/* Secure Authentication Divider */}
+                    <div className="relative my-6">
+                        <div className="absolute inset-0 flex items-center">
+                            <div className="w-full border-t border-gray-200"></div>
+                        </div>
+                        <div className="relative flex justify-center text-sm">
+                            <span className="px-4 bg-white text-gray-500">Secure authentication</span>
+                        </div>
                     </div>
 
                     {/* Footer Text */}
@@ -213,3 +97,12 @@ export default function SignIn() {
         </div>
     );
 }
+
+{/* 
+DISABLED: Custom Email/Password Authentication
+To re-enable, uncomment the Credentials provider in auth.ts and replace this file with the version that includes:
+- Email/password form with handleSubmit
+- Error state management
+- Sign up link
+- Form validation
+*/}

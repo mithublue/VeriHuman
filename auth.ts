@@ -17,6 +17,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
             allowDangerousEmailAccountLinking: true,
         }),
+        // DISABLED: Custom email/password authentication
+        // Uncomment below to re-enable
+        /*
         Credentials({
             name: "credentials",
             credentials: {
@@ -55,6 +58,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
                 };
             }
         }),
+        */
     ],
     pages: {
         signIn: '/auth/signin',

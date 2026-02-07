@@ -55,12 +55,14 @@ export async function POST(request: NextRequest) {
         // Hash password
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Create user
+        // Create user with active status (email verification disabled)
         const user = await prisma.user.create({
             data: {
                 name,
                 email,
                 password: hashedPassword,
+                isActive: true, // Account active immediately
+                emailVerified: new Date(), // Mark as verified
             },
             select: {
                 id: true,
@@ -72,7 +74,7 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json(
             {
-                message: 'User created successfully',
+                message: 'Registration successful! You can now sign in.',
                 user
             },
             { status: 201 }
