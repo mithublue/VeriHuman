@@ -168,7 +168,7 @@ export default function PitchPage() {
                                     <li key={i} className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-100">
                                         <span className="text-gray-700 font-medium">{f.title}</span>
                                         <span className={`text-[10px] uppercase tracking-widest font-bold px-2 py-1 rounded-md ${f.status === 'Live' ? 'bg-green-100 text-green-700' :
-                                                f.status === 'Core' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'
+                                            f.status === 'Core' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-600'
                                             }`}>
                                             {f.status}
                                         </span>
@@ -199,6 +199,36 @@ export default function PitchPage() {
                                     <div className="text-xs text-gray-500 uppercase tracking-wider">{item.label}</div>
                                 </div>
                             ))}
+                        </div>
+                    </section>
+
+                    {/* Founding Team */}
+                    <section className="mb-20">
+                        <h2 className="text-2xl font-bold text-gray-900 mb-12 text-center flex items-center justify-center">
+                            <Users className="w-6 h-6 mr-3 text-blue-600" />
+                            6. Founding Team
+                        </h2>
+                        <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                            <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm text-center group hover:border-blue-200 transition-colors">
+                                <div className="w-20 h-20 bg-blue-100 rounded-2xl mx-auto mb-6 flex items-center justify-center text-blue-600 group-hover:scale-110 transition-transform">
+                                    <Users className="w-10 h-10" />
+                                </div>
+                                <h3 className="text-xl font-bold text-gray-900">Mithu A Quayium</h3>
+                                <p className="text-blue-600 font-medium mb-4">CEO & Co-founder</p>
+                                <p className="text-sm text-gray-500 leading-relaxed">
+                                    Visionary lead with expertise in AI linguistics and full-stack architecture. Driving the IVEM model development.
+                                </p>
+                            </div>
+                            <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm text-center group hover:border-purple-200 transition-colors">
+                                <div className="w-20 h-20 bg-purple-100 rounded-2xl mx-auto mb-6 flex items-center justify-center text-purple-600 group-hover:scale-110 transition-transform">
+                                    <TrendingUp className="w-10 h-10" />
+                                </div>
+                                <h3 className="text-xl font-bold text-gray-900">Abu Yusuf Shihab</h3>
+                                <p className="text-purple-600 font-medium mb-4">CMO & Co-founder</p>
+                                <p className="text-sm text-gray-500 leading-relaxed">
+                                    Growth specialist focused on global market acquisition and e-commerce scaling for the VeriHuman ecosystem.
+                                </p>
+                            </div>
                         </div>
                     </section>
 
