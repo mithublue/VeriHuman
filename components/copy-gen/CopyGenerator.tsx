@@ -28,6 +28,7 @@ export default function CopyGenerator() {
     const [audience, setAudience] = useState('');
     const [platform, setPlatform] = useState('ecommerce');
     const [tone, setTone] = useState('professional');
+    const [copyLength, setCopyLength] = useState('medium');
 
     // Result State
     const [result, setResult] = useState<string | null>(null);
@@ -120,6 +121,8 @@ export default function CopyGenerator() {
                     audience,
                     platform,
                     tone,
+                    copyLength,
+                    image: imageBase64,
                     image: imageBase64,
                 }),
             });
@@ -144,6 +147,75 @@ export default function CopyGenerator() {
         } finally {
             setIsLoading(false);
         }
+    };
+
+    // Helper to render platform-specific preview wrapper
+    const renderPreview = () => {
+        if (!result) return null;
+
+        if (platform === 'social') {
+            return (
+                <div className="bg-white border rounded-xl overflow-hidden max-w-md mx-auto shadow-sm">
+                    <div className="flex items-center p-3 border-b">
+                        <div className="w-8 h-8 rounded-full bg-gray-200 mr-3"></div>
+                        <div>
+                            <div className="h-3 w-24 bg-gray-200 rounded mb-1"></div>
+                            <div className="h-2 w-16 bg-gray-100 rounded"></div>
+                        </div>
+                    </div>
+                    {imagePreview && (
+                        <div className="w-full bg-gray-100 aspect-square">
+                            <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                        </div>
+                    )}
+                    <div className="p-3">
+                        <div className="flex gap-4 mb-3">
+                            <div className="w-6 h-6 rounded-full bg-gray-100"></div>
+                            <div className="w-6 h-6 rounded-full bg-gray-100"></div>
+                            <div className="w-6 h-6 rounded-full bg-gray-100"></div>
+                        </div>
+                        <div className="text-sm text-gray-800 whitespace-pre-wrap" dangerouslySetInnerHTML={{ __html: result }} />
+                    </div>
+                </div>
+            );
+        }
+
+        if (platform === 'ecommerce') {
+            return (
+                <div className="bg-white border rounded-xl p-6 shadow-sm">
+                    <div className="flex gap-6 flex-col md:flex-row">
+                        {imagePreview ? (
+                            <div className="w-full md:w-1/3 bg-gray-100 rounded-lg aspect-square">
+                                <img src={imagePreview} alt="Preview" className="w-full h-full object-contain" />
+                            </div>
+                        ) : (
+                            <div className="w-full md:w-1/3 bg-gray-100 rounded-lg aspect-square flex items-center justify-center text-gray-400">
+                                Product Image
+                            </div>
+                        )}
+                        <div className="w-full md:w-2/3">
+                            <h3 className="text-xl font-medium text-gray-900 mb-2">{productName || 'Product Title'}</h3>
+                            <div className="flex items-center mb-4">
+                                {[1, 2, 3, 4, 5].map(i => <div key={i} className="w-4 h-4 text-yellow-400 fill-current">★</div>)}
+                                <span className="text-sm text-blue-600 ml-2">128 ratings</span>
+                            </div>
+                            <div className="h-px bg-gray-200 my-4"></div>
+                            <div className="prose prose-sm prose-indigo text-gray-700" dangerouslySetInnerHTML={{ __html: result }} />
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        // Default / Ad Copy View
+        return (
+            <div className="prose prose-indigo max-w-none">
+                <div
+                    className="whitespace-pre-wrap text-gray-700 leading-relaxed text-base"
+                    dangerouslySetInnerHTML={{ __html: result }}
+                />
+            </div>
+        );
     };
 
     return (
@@ -211,6 +283,23 @@ export default function CopyGenerator() {
                             />
                         </div>
 
+                        {/* Keywords Field [NEW] */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Keywords <span className="text-gray-400 font-normal">(Comma separated)</span>
+                            </label>
+                            <div className="relative">
+                                <input
+                                    type="text"
+                                    value={keywords}
+                                    onChange={(e) => setKeywords(e.target.value)}
+                                    placeholder="bluetooth, long battery, premium sound"
+                                    className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                                />
+                                <Hash className="w-4 h-4 text-gray-400 absolute left-3 top-3.5" />
+                            </div>
+                        </div>
+
                         {/* Features & Keywords */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
@@ -266,6 +355,7 @@ export default function CopyGenerator() {
                                         className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 appearance-none bg-white"
                                     >
                                         <option value="professional">Professional</option>
+                                        <option value="respectful_aspirational">Respectful & Aspirational</option>
                                         <option value="casual">Casual & Friendly</option>
                                         <option value="luxury">Luxury & Elegant</option>
                                         <option value="witty">Witty & Fun</option>
@@ -273,6 +363,26 @@ export default function CopyGenerator() {
                                     </select>
                                     <MessageSquare className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
                                 </div>
+                            </div>
+                        </div>
+
+                        {/* Length [NEW] */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Copy Length</label>
+                            <div className="flex gap-2 p-1 bg-gray-50 rounded-lg border border-gray-200">
+                                {['short', 'medium', 'long'].map((len) => (
+                                    <button
+                                        key={len}
+                                        type="button"
+                                        onClick={() => setCopyLength(len)}
+                                        className={`flex-1 py-1.5 text-sm font-medium rounded-md capitalize transition-all ${copyLength === len
+                                                ? 'bg-white text-indigo-600 shadow-sm border border-gray-100'
+                                                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                                            }`}
+                                    >
+                                        {len}
+                                    </button>
+                                ))}
                             </div>
                         </div>
 
@@ -328,11 +438,8 @@ export default function CopyGenerator() {
                                 </div>
                             </div>
                         ) : result ? (
-                            <div className="prose prose-indigo max-w-none">
-                                <div
-                                    className="whitespace-pre-wrap text-gray-700 leading-relaxed text-base"
-                                    dangerouslySetInnerHTML={{ __html: result }}
-                                />
+                            <div className="animate-fadeIn">
+                                {renderPreview()}
                             </div>
                         ) : (
                             <div className="h-full flex flex-col items-center justify-center text-gray-400 min-h-[300px] border-2 border-dashed border-gray-100 rounded-xl bg-gray-50/50">
