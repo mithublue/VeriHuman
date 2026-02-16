@@ -30,6 +30,7 @@ model User {
   apiUsage              ApiUsage[]
   accounts              Account[]
   sessions              Session[]
+  generatedCopies       GeneratedCopy[]
   
   @@index([email])
 }
@@ -112,4 +113,19 @@ model ApiUsage {
   
   @@index([userId, action, timestamp])
   @@index([provider, timestamp])
+}
+
+model GeneratedCopy {
+  id          String   @id @default(cuid())
+  userId      String?
+  productName String
+  inputData   String   @db.Text
+  generated   String   @db.Text
+  platform    String
+  tone        String
+  createdAt   DateTime @default(now())
+  
+  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
 }
