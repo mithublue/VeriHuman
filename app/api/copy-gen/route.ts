@@ -16,13 +16,26 @@ export async function POST(req: NextRequest) {
 
         const { productName, features, keywords, audience, platform, tone, copyLength, language, image } = await req.json();
 
-        // Map language to full name
-        const languageMap: Record<string, string> = {
-            'english': 'English',
-            'bengali': 'Bengali (বাংলা)',
-            'arabic': 'Arabic (العربية)'
+        // Map language to full name and writing direction
+        const languageMap: Record<string, { name: string; code: string; rtl: boolean }> = {
+            'english': { name: 'English', code: 'en', rtl: false },
+            'bengali': { name: 'Bengali (বাংলা)', code: 'bn', rtl: false },
+            'arabic': { name: 'Arabic (العربية)', code: 'ar', rtl: true }
         };
-        const targetLanguage = languageMap[language] || 'English';
+        const targetLang = languageMap[language] || languageMap['english'];
+
+        // Platform-specific guidance
+        const platformGuidance: Record<string, string> = {
+            'noon': 'Noon.sa / Saudi e-commerce format. Focus on Vision 2030 values, local context, and premium quality.',
+            'ecommerce': 'Standard e-commerce (Amazon/Shopify/Noon). Professional, feature-focused, SEO-optimized.',
+            'tiktok': 'TikTok caption - short, catchy, trendy. Use hooks, emojis, and viral-style language.',
+            'google_ads': 'Google/PLA format - concise, keyword-heavy, with clear CTAs. Stay within character limits.',
+            'whatsapp': 'WhatsApp/Direct message - conversational, personal, sales-focused with urgency.',
+            'blog': 'SEO article snippet - informative, keyword-rich, engaging for readers and search engines.',
+            'social': 'Social media (FB/Instagram) - engaging, shareable, with emotional hooks.',
+            'ad': 'Ad copy - attention-grabbing headlines with strong CTAs.',
+            'email': 'Email marketing - subject line worthy, benefit-focused, with clear next steps.'
+        };
 
         // 1. Construct the prompt
         let prompt = `You are an expert ${tone.replace('_', ' ')} copywriter specializing in ${platform} marketing.
@@ -34,20 +47,33 @@ export async function POST(req: NextRequest) {
         Key Features: ${features || 'Not specified'}
         SEO Keywords: ${keywords || 'None'}
         Desired Length: ${copyLength || 'Medium'} ${typeof copyLength === 'number' || !isNaN(Number(copyLength)) ? 'characters' : ''}
-        Target Language: ${targetLanguage}
+        Target Language: ${targetLang.name} (${targetLang.code})
+        Platform: ${platformGuidance[platform] || platform}
         
         Requirements:
-        1. **Language**: Write the ENTIRE copy in ${targetLanguage}. This is CRITICAL.
+        1. **Language & Localization**: 
+           - Write the ENTIRE copy in ${targetLang.name}. This is CRITICAL.
+           - For ${targetLang.code === 'ar' ? 'Arabic or non-English' : 'any language'}: Keep technical terms, brand names, and specifications (e.g., "bluetooth", "RAM", "16GB", "SSD", "HP", "Core i7") in ENGLISH as per standard marketplace conventions. Only translate descriptive text.
+           - ${targetLang.rtl ? 'Use RTL (right-to-left) text flow.' : 'Use LTR (left-to-right) text flow.'}
+           
         2. **Format**: Return the output in clean, semantic HTML (e.g., <p>, <ul>, <li>, <strong>). 
            - **CRITICAL**: Use <ul> and <li> tags for ANY lists or bullet points. DO NOT use plain text bullets like "•" or "-".
            - Use <strong> tags for emphasis.
            - Do NOT use markdown code blocks or \`\`\`html tags. Just the raw HTML content.
+           
         3. **Structure**: Follow the AIDA framework (Attention, Interest, Desire, Action) for the flow, BUT **DO NOT** label the sections. Make it flow naturally.
+        
         4. **Tone & Humanization**: Write in a strictly human tone. Avoid AI-sounding fluff.
            - If tone is "Respectful & Aspirational": Be polite, inspiring, and focus on how the product elevates the user's life.
            - Command: **HUMANIZE THE OUTPUT TO PASS AI DETECTION.**
-        5. **Platform Optimization**: Optimize for ${platform}.
-        6. **Keywords**: Naturally weave the provided SEO keywords into the copy.
+           
+        5. **Platform Optimization**: ${platformGuidance[platform] || `Optimize for ${platform}.`}
+        
+        6. **Keywords Integration**: Naturally weave ALL the provided SEO keywords (${keywords || 'none provided'}) into the copy. Make them feel organic, not forced.
+        
+        7. **Feature Highlighting**: Incorporate ALL key features (${features || 'none provided'}) prominently in the copy.
+        
+        8. **Audience Targeting**: Speak directly to the target audience (${audience || 'general public'}) with language and benefits that resonate with them.
         `;
 
         let generatedText = '';
