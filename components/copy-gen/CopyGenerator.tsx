@@ -29,6 +29,8 @@ export default function CopyGenerator() {
     const [platform, setPlatform] = useState('ecommerce');
     const [tone, setTone] = useState('professional');
     const [copyLength, setCopyLength] = useState('medium');
+    const [customLength, setCustomLength] = useState('');
+    const [language, setLanguage] = useState('english');
 
     // Result State
     const [result, setResult] = useState<string | null>(null);
@@ -149,7 +151,8 @@ export default function CopyGenerator() {
                     audience,
                     platform,
                     tone,
-                    copyLength,
+                    copyLength: copyLength === 'custom' ? customLength : copyLength,
+                    language,
                     image: imageBase64,
                 }),
             });
@@ -365,8 +368,13 @@ export default function CopyGenerator() {
                                         onChange={(e) => setPlatform(e.target.value)}
                                         className="w-full pl-9 pr-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 appearance-none bg-white"
                                     >
-                                        <option value="ecommerce">Ecommerce (Amazon/Shopify)</option>
+                                        <option value="ecommerce">Ecommerce (Amazon/Shopify/Noon)</option>
+                                        <option value="noon">Noon.sa / Local Ecommerce</option>
                                         <option value="social">Social Media (FB/Insta)</option>
+                                        <option value="tiktok">TikTok Caption</option>
+                                        <option value="google_ads">Google/Product Listing Ads</option>
+                                        <option value="whatsapp">WhatsApp/Direct Message</option>
+                                        <option value="blog">Blog/SEO Article Snippet</option>
                                         <option value="ad">Ad Copy</option>
                                         <option value="email">Email Marketing</option>
                                     </select>
@@ -397,20 +405,47 @@ export default function CopyGenerator() {
                         <div>
                             <label className="block text-sm font-medium text-gray-700 mb-1">Copy Length</label>
                             <div className="flex gap-2 p-1 bg-gray-50 rounded-lg border border-gray-200">
-                                {['short', 'medium', 'long'].map((len) => (
+                                {['short', 'medium', 'long', 'custom'].map((len) => (
                                     <button
                                         key={len}
                                         type="button"
                                         onClick={() => setCopyLength(len)}
                                         className={`flex-1 py-1.5 text-sm font-medium rounded-md capitalize transition-all ${copyLength === len
-                                            ? 'bg-white text-indigo-600 shadow-sm border border-gray-100'
-                                            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                                                ? 'bg-white text-indigo-600 shadow-sm border border-gray-100'
+                                                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
                                             }`}
                                     >
                                         {len}
                                     </button>
                                 ))}
                             </div>
+                            {copyLength === 'custom' && (
+                                <div className="mt-3">
+                                    <input
+                                        type="number"
+                                        value={customLength}
+                                        onChange={(e) => setCustomLength(e.target.value)}
+                                        placeholder="Enter character count"
+                                        min="50"
+                                        max="10000"
+                                        className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
+                                    />
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Language Dropdown [NEW] */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Language</label>
+                            <select
+                                value={language}
+                                onChange={(e) => setLanguage(e.target.value)}
+                                className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 appearance-none bg-white"
+                            >
+                                <option value="english">English</option>
+                                <option value="bengali">Bengali (বাংলা)</option>
+                                <option value="arabic">Arabic (العربية)</option>
+                            </select>
                         </div>
 
                         <button

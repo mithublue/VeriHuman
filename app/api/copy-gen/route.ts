@@ -14,7 +14,15 @@ export async function POST(req: NextRequest) {
         // Allow guest usage for now, but link to user if logged in
         const userId = session?.user?.id;
 
-        const { productName, features, keywords, audience, platform, tone, copyLength, image } = await req.json();
+        const { productName, features, keywords, audience, platform, tone, copyLength, language, image } = await req.json();
+
+        // Map language to full name
+        const languageMap: Record<string, string> = {
+            'english': 'English',
+            'bengali': 'Bengali (বাংলা)',
+            'arabic': 'Arabic (العربية)'
+        };
+        const targetLanguage = languageMap[language] || 'English';
 
         // 1. Construct the prompt
         let prompt = `You are an expert ${tone.replace('_', ' ')} copywriter specializing in ${platform} marketing.
@@ -25,19 +33,21 @@ export async function POST(req: NextRequest) {
         Target Audience: ${audience || 'General public'}
         Key Features: ${features || 'Not specified'}
         SEO Keywords: ${keywords || 'None'}
-        Desired Length: ${copyLength || 'Medium'}
+        Desired Length: ${copyLength || 'Medium'} ${typeof copyLength === 'number' || !isNaN(Number(copyLength)) ? 'characters' : ''}
+        Target Language: ${targetLanguage}
         
         Requirements:
-        1. **Format**: Return the output in clean, semantic HTML (e.g., <p>, <ul>, <li>, <strong>). 
+        1. **Language**: Write the ENTIRE copy in ${targetLanguage}. This is CRITICAL.
+        2. **Format**: Return the output in clean, semantic HTML (e.g., <p>, <ul>, <li>, <strong>). 
            - **CRITICAL**: Use <ul> and <li> tags for ANY lists or bullet points. DO NOT use plain text bullets like "•" or "-".
            - Use <strong> tags for emphasis.
            - Do NOT use markdown code blocks or \`\`\`html tags. Just the raw HTML content.
-        2. **Structure**: Follow the AIDA framework (Attention, Interest, Desire, Action) for the flow, BUT **DO NOT** label the sections. Make it flow naturally.
-        3. **Tone & Humanization**: Write in a strictly human tone. Avoid AI-sounding fluff.
+        3. **Structure**: Follow the AIDA framework (Attention, Interest, Desire, Action) for the flow, BUT **DO NOT** label the sections. Make it flow naturally.
+        4. **Tone & Humanization**: Write in a strictly human tone. Avoid AI-sounding fluff.
            - If tone is "Respectful & Aspirational": Be polite, inspiring, and focus on how the product elevates the user's life.
            - Command: **HUMANIZE THE OUTPUT TO PASS AI DETECTION.**
-        4. **Platform Optimization**: Optimize for ${platform}.
-        5. **Keywords**: Naturally weave the provided SEO keywords into the copy.
+        5. **Platform Optimization**: Optimize for ${platform}.
+        6. **Keywords**: Naturally weave the provided SEO keywords into the copy.
         `;
 
         let generatedText = '';
