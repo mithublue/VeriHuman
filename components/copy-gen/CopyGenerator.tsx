@@ -78,12 +78,40 @@ export default function CopyGenerator() {
         }
     };
 
-    const handleCopy = () => {
-        if (result) {
-            navigator.clipboard.writeText(result);
+    const handleCopy = async () => {
+        if (!result) return;
+
+        try {
+            // Create plain text version by stripping tags
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = result;
+            const plainText = tempDiv.innerText;
+
+            const clipboardData = [
+                new ClipboardItem({
+                    'text/html': new Blob([result], { type: 'text/html' }),
+                    'text/plain': new Blob([plainText], { type: 'text/plain' })
+                })
+            ];
+
+            await navigator.clipboard.write(clipboardData);
+
             setCopied(true);
-            toast.success('Copied to clipboard!');
+            toast.success('Copied formatted text!');
             setTimeout(() => setCopied(false), 2000);
+        } catch (err) {
+            console.error('Copy failed:', err);
+            // Fallback: Copy plain text only
+            try {
+                const tempDiv = document.createElement('div');
+                tempDiv.innerHTML = result;
+                await navigator.clipboard.writeText(tempDiv.innerText);
+                setCopied(true);
+                toast.success('Copied text!');
+                setTimeout(() => setCopied(false), 2000);
+            } catch (fallbackErr) {
+                toast.error('Failed to copy text');
+            }
         }
     };
 
@@ -122,7 +150,6 @@ export default function CopyGenerator() {
                     platform,
                     tone,
                     copyLength,
-                    image: imageBase64,
                     image: imageBase64,
                 }),
             });
@@ -376,8 +403,8 @@ export default function CopyGenerator() {
                                         type="button"
                                         onClick={() => setCopyLength(len)}
                                         className={`flex-1 py-1.5 text-sm font-medium rounded-md capitalize transition-all ${copyLength === len
-                                                ? 'bg-white text-indigo-600 shadow-sm border border-gray-100'
-                                                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                                            ? 'bg-white text-indigo-600 shadow-sm border border-gray-100'
+                                            : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
                                             }`}
                                     >
                                         {len}
