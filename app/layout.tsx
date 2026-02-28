@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
+import { Analytics } from '@vercel/analytics/next'
 import { ProgressBar } from '@/components/ProgressBar'
 import './globals.css'
 import './styles/animations.css'
@@ -25,6 +26,7 @@ export default function RootLayout({
             <body className={inter.className}>
                 <ProgressBar />
                 {children}
+                <Analytics />
             </body>
         </html>
     )
